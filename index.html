@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bodin Waste Classifier AI</title>
+    <title>Bodin Waste Classifier AI & Leaderboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
     
@@ -40,7 +40,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        header h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; }
+        header h1 { margin: 0; font-size: 26px; font-weight: 700; }
         header p { margin: 6px 0 0 0; font-size: 15px; opacity: 0.85; }
 
         .container {
@@ -60,198 +60,89 @@
             text-align: center;
         }
 
-        /* ตกแต่งส่วนตั้งค่าโมเดล */
         .url-input {
-            width: 100%;
-            padding: 14px;
-            border: 1.5px solid #e5e7eb;
-            border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 16px;
-            text-align: center;
-            margin-bottom: 12px;
-            background-color: #f9fafb;
+            width: 100%; padding: 14px; border: 1.5px solid #e5e7eb;
+            border-radius: 12px; box-sizing: border-box; font-size: 16px;
+            text-align: center; margin-bottom: 12px; background-color: #f9fafb;
         }
 
         .btn {
-            background-color: var(--bodin-blue);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 14px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            background-color: var(--bodin-blue); color: white; border: none;
+            padding: 14px 28px; border-radius: 14px; cursor: pointer;
+            font-size: 16px; font-weight: 600; transition: all 0.2s ease;
             -webkit-appearance: none;
         }
-
         .btn:active { transform: scale(0.98); opacity: 0.9; }
 
-        /* ส่วนควบคุมกล้องและแสดงผลระดับพรีเมียม */
+        /* ส่วนควบคุมกล้อง */
         .webcam-box {
-            position: relative;
-            width: 100%;
-            max-width: 440px;
-            aspect-ratio: 4/3;
-            background-color: #111827;
-            border-radius: 20px;
-            margin: 0 auto 15px auto;
-            overflow: hidden;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative; width: 100%; max-width: 440px; aspect-ratio: 4/3;
+            background-color: #111827; border-radius: 20px; margin: 0 auto 15px auto;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
+        #webcam-container video { width: 100% !important; height: 100% !important; object-fit: cover; }
+        .webcam-placeholder { color: #9ca3af; font-size: 16px; position: absolute; z-index: 1; }
 
-        #webcam-container video {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover;
-        }
-
-        .webcam-placeholder {
-            color: #9ca3af;
-            font-size: 16px;
-            position: absolute;
-            z-index: 1;
-        }
-
-        /* ปุ่มเปิด/ปิดกล้องสไตล์ iPad Toggle */
-        .camera-control {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 10px;
-        }
-
+        .camera-control { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; }
         .switch-label { font-size: 18px; font-weight: 600; color: #4b5563; }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px; width: 26px;
-            left: 4px; bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #34d399; }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* การ์ดแจ้งเตือนผลลัพธ์สีสดใสตามประเภทขยะ */
-        .result-card {
-            padding: 24px;
-            border-radius: 20px;
-            color: white;
-            display: none;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            animation: zoomIn 0.3s ease;
-        }
-
-        @keyframes zoomIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
+        /* การ์ดแจ้งเตือนผลลัพธ์ */
+        .result-card { padding: 24px; border-radius: 20px; color: white; display: none; box-shadow: 0 8px 25px rgba(0,0,0,0.1); animation: zoomIn 0.3s ease; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .result-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
         .result-details { font-size: 18px; margin-bottom: 15px; opacity: 0.95; }
 
-        /* สไตล์ถังขยะ CSS */
-        .bin-container {
-            display: inline-block; width: 90px; height: 110px; position: relative;
-            border-radius: 10px 10px 14px 14px; margin: 10px auto;
-            border: 4px solid rgba(255, 255, 255, 0.9);
-        }
+        /* รูปถังขยะ CSS */
+        .bin-container { display: inline-block; width: 90px; height: 110px; position: relative; border-radius: 10px 10px 14px 14px; margin: 10px auto; border: 4px solid rgba(255, 255, 255, 0.9); }
         .bin-lid { width: 102px; height: 14px; background: rgba(255, 255, 255, 0.9); position: absolute; top: -16px; left: -10px; border-radius: 6px; }
         .bin-handle { width: 34px; height: 8px; border: 3px solid rgba(255, 255, 255, 0.9); border-bottom: none; position: absolute; top: -24px; left: 25px; border-radius: 4px 4px 0 0; }
         .bin-icon-text { color: white; font-weight: bold; font-size: 14px; margin-top: 40px; }
 
-        /* สีธีมของถังขยะแต่ละประเภท */
         .bg-recycle { background-color: var(--recycle-color); color: #1e293b !important; }
         .bg-recycle .bin-container { background-color: var(--recycle-color); border-color: #1e293b; }
         .bg-recycle .bin-lid, .bg-recycle .bin-handle { background: #1e293b; }
         .bg-recycle .bin-handle { border-color: #1e293b; background: transparent; }
         .bg-recycle .bin-icon-text { color: #1e293b; }
-
         .bg-general { background-color: var(--general-color); }
         .bg-general .bin-container { background-color: var(--general-color); }
-
         .bg-organic { background-color: var(--organic-color); }
         .bg-organic .bin-container { background-color: var(--organic-color); }
-
         .bg-hazardous { background-color: var(--hazardous-color); }
         .bg-hazardous .bin-container { background-color: var(--hazardous-color); }
 
-        /* Popup สไตล์ iPadOS Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            opacity: 0; visibility: hidden;
-            transition: all 0.3s ease;
-        }
+        /* ตารางผู้นำคะแนน (Leaderboard) */
+        .leaderboard-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .table-wrapper { overflow-x: auto; margin-top: 15px; border-radius: 12px; border: 1px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 16px; }
+        th, td { padding: 14px; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f8fafc; font-weight: 700; color: #4b5563; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) { background-color: #f9fafb; }
+        .rank-badge { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; font-weight: bold; }
+        .rank-1 { background-color: #fef3c7; color: #d97706; }
+        .rank-2 { background-color: #e2e8f0; color: #475569; }
+        .rank-3 { background-color: #ffedd5; color: #ea580c; }
 
+        /* ระบบแบ่งหน้า (Pagination) */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
+        .page-btn { background-color: white; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; color: #4b5563; }
+        .page-btn.active { background-color: var(--bodin-blue); color: white; border-color: var(--bodin-blue); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Popup Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
-
-        .modal-box {
-            background: white;
-            width: 85%;
-            max-width: 420px;
-            padding: 28px;
-            border-radius: 24px;
-            text-align: center;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-        }
-
+        .modal-box { background: white; width: 85%; max-width: 420px; padding: 28px; border-radius: 24px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.15); transform: translateY(20px); transition: all 0.3s ease; }
         .modal-overlay.active .modal-box { transform: translateY(0); }
-
         .modal-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); margin-bottom: 10px; }
-        .modal-text { font-size: 16px; color: #4b5563; margin-bottom: 20px; line-height: 1.5; }
-
-        .bodin-input {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 18px;
-            text-align: center;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-            font-weight: 600;
-            letter-spacing: 2px;
-        }
-        .bodin-input:focus { border-color: var(--bodin-blue); outline: none; }
-
+        .modal-text { font-size: 16px; color: #4b5563; margin-bottom: 20px; }
+        .bodin-input { width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 18px; text-align: center; box-sizing: border-box; margin-bottom: 20px; font-weight: 600; letter-spacing: 2px; }
         .modal-buttons { display: flex; gap: 12px; justify-content: center; }
         .btn-secondary { background-color: #f3f4f6; color: #4b5563; }
     </style>
@@ -260,7 +151,7 @@
 
     <header>
         <h1>♻️ Bodin Point - AI แยกขยะจิตอาสา</h1>
-        <p>นวัตกรรมแยกขยะอัจฉตริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)</p>
+        <p>นวัตกรรมแยกขยะอัจฉริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)</p>
     </header>
 
     <div class="container">
@@ -299,253 +190,30 @@
             <div style="font-size: 14px; margin-top: 5px; font-weight: 500;">AI มั่นใจ: <span id="res-confidence">0</span>%</div>
         </div>
 
+        <div class="card" style="text-align: stretch;">
+            <div class="leaderboard-title">🏆 ตารางคะแนนรวมจิตอาสา Bodin Point</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%; text-align: center;">อันดับ</th>
+                            <th style="width: 55%;">รหัสนักเรียน</th>
+                            <th style="width: 30%; text-align: right;">คะแนนรวม (แต้ม)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        </tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination-container"></div>
+        </div>
+
     </div>
 
     <div class="modal-overlay" id="point-modal">
         <div class="modal-box">
-            <div class="modal-title">✨ ขอบคุณที่ช่วยแยกขยะนะคะ!</div>
+            <div class="modal-title">✨ ตรวจจับภาพขยะสำเร็จ!</div>
             <div class="modal-text">ต้องการสะสมคะแนน <b>Bodin Point จิตอาสาทำความดี</b> หรือไม่คะ?</div>
             
             <div id="input-score-section" style="display: none;">
-                <input type="number" id="student-id" class="bodin-input" placeholder="กรอกรหัสนักเรียนบดินทร" pattern="[0-9]*" inputmode="numeric">
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" id="btn-no" onclick="closeModal(false)">ไม่ต้องการ</button>
-                <button class="btn" id="btn-yes" onclick="activateInput()">ต้องการสะสม</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let model, webcam, maxPredictions;
-        let isModelLoaded = false;
-        let isScanning = false;
-        let lastSpokenText = "";
-        let scanInterval;
-
-        // 1. ระบบดึงเสียงสังเคราะห์ภาษาไทย (Safari รองรับผ่าน Web Speech API)
-        function speakThai(text) {
-            if ('speechSynthesis' in window) {
-                // ยกเลิกคิวเสียงเก่าที่ค้างอยู่เพื่อให้ตอบสนองไวขึ้น
-                window.speechSynthesis.cancel(); 
-                
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'th-TH';
-                utterance.rate = 1.0; // ความเร็วมาตรฐาน
-                utterance.pitch = 1.0;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        // 2. โหลดโมเดล AI จาก Teachable Machine
-        async function initModel() {
-            const modelURLInput = document.getElementById('model-url').value.trim();
-            const statusDiv = document.getElementById('model-status');
-            if (!modelURLInput) { alert('กรุณากรอกลิงก์โมเดลก่อนค่ะ'); return; }
-
-            statusDiv.innerText = "กำลังเชื่อมต่อคลาวด์โมเดล...";
-            statusDiv.style.color = "#d97706";
-
-            try {
-                let baseUrl = modelURLInput.endsWith('/') ? modelURLInput : modelURLInput + '/';
-                model = await tmImage.load(baseUrl + "model.json", baseUrl + "metadata.json");
-                maxPredictions = model.getTotalClasses();
-                isModelLoaded = true;
-                statusDiv.innerText = "✅ เชื่อมต่อระบบ AI บดินทรสำเร็จแล้ว! พร้อมสแกนขยะ";
-                statusDiv.style.color = "#059669";
-            } catch (e) {
-                statusDiv.innerText = "❌ ผิดพลาด: โปรดตรวจสอบลิงก์อีกครั้ง";
-                statusDiv.style.color = "#dc2626";
-                isModelLoaded = false;
-            }
-        }
-
-        // 3. จัดการสวิตช์ เปิด/ปิดกล้อง
-        async function handleCameraToggle(toggle) {
-            const camText = document.getElementById('cam-status-text');
-            
-            if (toggle.checked) {
-                camText.innerText = "🔄 กำลังเปิดระบบกล้อง...";
-                try {
-                    // ตั้งค่ากล้องความละเอียดที่พอเหมาะเพื่อให้สตรีมภาพลื่นไหลบน iPad
-                    webcam = new tmImage.Webcam(400, 300, true); 
-                    await webcam.setup({ facingMode: "environment" }); // ใช้กล้องหลังของ iPad เป็นหลัก
-                    await webcam.play();
-                    
-                    document.getElementById('webcam-container').innerHTML = "";
-                    document.getElementById('webcam-container').appendChild(webcam.canvas);
-                    camText.style.display = "none";
-                    
-                    isScanning = true;
-                    startScanningLoop();
-                } catch (err) {
-                    console.error(err);
-                    alert("ไม่สามารถเข้าถึงกล้องได้ค่ะ โปรดตรวจสอบการอนุญาตสิทธิ์กล้องบน Safari");
-                    toggle.checked = false;
-                    camText.innerText = "🎥 กล้องปิดอยู่";
-                }
-            } else {
-                stopCamera();
-            }
-        }
-
-        function stopCamera() {
-            isScanning = false;
-            clearInterval(scanInterval);
-            if (webcam) {
-                webcam.stop();
-            }
-            document.getElementById('webcam-container').innerHTML = "";
-            document.getElementById('cam-status-text').style.display = "block";
-            document.getElementById('cam-status-text').innerText = "🎥 กล้องปิดอยู่";
-            document.getElementById('result-card').style.display = "none";
-        }
-
-        // 4. ลูปการทำงานตรวจจับขยะ
-        function startScanningLoop() {
-            scanInterval = setInterval(async () => {
-                if (!isScanning) return;
-                webcam.update(); // อัปเดตเฟรมภาพจากกล้อง
-                
-                if (isModelLoaded) {
-                    await predictLive();
-                } else {
-                    // โหมดสุ่มจำลองสถานการณ์ตรวจจับขยะอัตโนมัติ (กรณีไม่มีลิงก์โมเดล)
-                    clearInterval(scanInterval);
-                    predictMockup();
-                }
-            }, 100); // ทำนายทุกๆ 0.1 วินาที
-        }
-
-        // 5. ทำนายภาพจากกล้องจริงด้วย AI
-        async function predictLive() {
-            const prediction = await model.predict(webcam.canvas);
-            let highestIndex = 0;
-            let highestValue = 0;
-            
-            for (let i = 0; i < prediction.length; i++) {
-                if (prediction[i].probability > highestValue) {
-                    highestValue = prediction[i].probability;
-                    highestIndex = i;
-                }
-            }
-
-            const confidence = Math.round(prediction[highestIndex].probability * 100);
-            
-            // AI ต้องมั่นใจมากกว่า 85% ถึงจะเริ่มตัดหน้าจอแจ้งเตือนและออกเสียง
-            if (confidence > 85) {
-                isScanning = false; // หยุดสแกนชั่วคราว
-                const className = prediction[highestIndex].className.toLowerCase();
-                
-                let trashType = 'general';
-                if (className.includes('recycle') || className.includes('รีไซเคิล') || className.includes('เหลือง')) trashType = 'recycle';
-                else if (className.includes('general') || className.includes('ทั่วไป') || className.includes('น้ำเงิน')) trashType = 'general';
-                else if (className.includes('organic') || className.includes('เปียก') || className.includes('เขียว')) trashType = 'organic';
-                else if (className.includes('hazard') || className.includes('อันตราย') || className.includes('แดง')) trashType = 'hazardous';
-
-                processTrashResult(trashType, confidence);
-            }
-        }
-
-        // ระบบสุ่มทดสอบการแจ้งเตือนและการทำงาน (ใช้ทดสอบตอนยังไม่มีโมเดล)
-        function predictMockup() {
-            const types = ['recycle', 'general', 'organic', 'hazardous'];
-            const randomType = types[Math.floor(Math.random() * types.length)];
-            processTrashResult(randomType, 95);
-        }
-
-        // 6. ประมวลผลลัพธ์: เปลี่ยนสีหน้าจอ -> พูดออกเสียง -> เปิด Popup แต้มสะสม
-        function processTrashResult(type, confidence) {
-            const card = document.getElementById('result-card');
-            const title = document.getElementById('res-title');
-            const details = document.getElementById('res-details');
-            const binLabel = document.getElementById('bin-label');
-            
-            card.className = "result-card";
-            let speechMessage = "";
-            
-            if (type === 'recycle') {
-                card.classList.add('bg-recycle');
-                title.innerText = "ขยะรีไซเคิล (ทิ้งลงถังสีเหลือง) 🟡";
-                details.innerText = "ส่วนประกอบ: ขวดพลาสติก, กระป๋องอลูมิเนียม, กล่องกระดาษ";
-                binLabel.innerText = "รีไซเคิล";
-                speechMessage = "ขยะรีไซเคิล โปรดทิ้งลงถังสีเหลืองค่ะ";
-            } else if (type === 'general') {
-                card.classList.add('bg-general');
-                title.innerText = "ขยะทั่วไป (ทิ้งลงถังสีน้ำเงิน) 🔵";
-                details.innerText = "ส่วนประกอบ: ซองขนม, ถุงพลาสติกเปื้อนเศษอาหาร";
-                binLabel.innerText = "ทั่วไป";
-                speechMessage = "ขยะทั่วไป โปรดทิ้งลงถังสีน้ำเงินค่ะ";
-            } else if (type === 'organic') {
-                card.classList.add('bg-organic');
-                title.innerText = "ขยะเปียก / อินทรีย์ (ทิ้งลงถังสีเขียว) 🟢";
-                details.innerText = "ส่วนประกอบ: เศษอาหาร, เปลือกผลไม้, เศษใบไม้พืชผัก";
-                binLabel.innerText = "ขยะเปียก";
-                speechMessage = "ขยะเปียกอินทรีย์ โปรดทิ้งลงถังสีเขียวค่ะ";
-            } else if (type === 'hazardous') {
-                card.classList.add('bg-hazardous');
-                title.innerText = "ขยะอันตราย (ทิ้งลงถังสีแดง) 🔴";
-                details.innerText = "ส่วนประกอบ: ถ่านไฟฉาย, หลอดไฟ, แบตเตอรี่, ขยะสารเคมี";
-                binLabel.innerText = "อันตราย";
-                speechMessage = "ขยะอันตราย โปรดทิ้งลงถังสีแดงค่ะ";
-            }
-
-            document.getElementById('res-confidence').innerText = confidence;
-            card.style.display = 'block';
-
-            // สั่งงานเสียงพูดออกลำโพง
-            speakThai(speechMessage);
-
-            // หน่วงเวลา 2.5 วินาทีเพื่อให้ทิ้งขยะและฟังเสียงเสร็จ ก่อนเปิดกล่องรับคะแนนสะสม Bodin Point
-            setTimeout(() => {
-                openModal();
-            }, 2500);
-        }
-
-        // 7. ระบบควบคุมหน้าต่าง Popup จิตอาสา Bodin Point
-        function openModal() {
-            // ตั้งค่าหน้าต่างเริ่มต้น
-            document.getElementById('input-score-section').style.display = 'none';
-            document.getElementById('student-id').value = "";
-            
-            const btnYes = document.getElementById('btn-yes');
-            btnYes.innerText = "ต้องการสะสม";
-            btnYes.setAttribute("onclick", "activateInput()");
-            
-            document.getElementById('point-modal').classList.add('active');
-        }
-
-        function activateInput() {
-            // เปลี่ยนโหมดในคาร์ดเป็นช่องกรอกข้อมูลรหัส
-            document.getElementById('input-score-section').style.display = 'block';
-            document.getElementById('student-id').focus(); // คีย์บอร์ดเด้งบน iPad ทันที
-            
-            const btnYes = document.getElementById('btn-yes');
-            btnYes.innerText = "ตกลง (บันทึกแต้ม)";
-            btnYes.setAttribute("onclick", "closeModal(true)");
-        }
-
-        function closeModal(isSaveData) {
-            if (isSaveData) {
-                const studentId = document.getElementById('student-id').value.trim();
-                if (!studentId) {
-                    alert("กรุณากรอกรหัสนักเรียนบดินทรก่อนกดตกลงค่ะ");
-                    return;
-                }
-                alert("🎉 บันทึกแต้ม Bodin Point รหัส " + studentId + " เรียบร้อย! อนุโมทนาบุญจิตอาสาค่ะ");
-            }
-            
-            // ปิดหน้าต่างโมเดลกลับสู่หน้าหลัก
-            document.getElementById('point-modal').classList.remove('active');
-            document.getElementById('result-card').style.display = "none";
-            
-            // เคลียร์และรันกล้องเพื่อสแกนขยะชิ้นถัดไปต่อทันที (ถ้ายังเปิดสวิตช์กล้องอยู่)
-            if (document.getElementById('camera-toggle').checked) {
-                isScanning = true;
-                startScanningLoop();
-            }
-        }
-    </script>
-</body>
-</html>
+                <input type="number" id="student-id" class
