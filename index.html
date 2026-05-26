@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bodin Waste Classifier AI & Leaderboard</title>
+    <title>Bodin Waste Classifier AI & Statistics</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
     
@@ -116,8 +116,18 @@
         .bg-hazardous { background-color: var(--hazardous-color); }
         .bg-hazardous .bin-container { background-color: var(--hazardous-color); }
 
-        /* ตารางผู้นำคะแนน (Leaderboard) */
-        .leaderboard-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        /* 📊 ส่วนแสดงเมนูสถิติรายบุคคล (เพิ่มใหม่) */
+        .search-box-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-input { flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; }
+        .search-input:focus { border-color: var(--bodin-blue); outline: none; }
+        
+        .stats-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; display: none; }
+        .stats-box { background-color: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; }
+        .stats-val { font-size: 28px; font-weight: 800; color: var(--bodin-blue); margin-top: 5px; }
+        .stats-lbl { font-size: 14px; color: #6b7280; font-weight: 600; }
+
+        /* ตารางผู้นำคะแนน */
+        .section-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .table-wrapper { overflow-x: auto; margin-top: 15px; border-radius: 12px; border: 1px solid #e5e7eb; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 16px; }
         th, td { padding: 14px; border-bottom: 1px solid #e5e7eb; }
@@ -129,7 +139,7 @@
         .rank-2 { background-color: #e2e8f0; color: #475569; }
         .rank-3 { background-color: #ffedd5; color: #ea580c; }
 
-        /* ระบบแบ่งหน้า (Pagination) */
+        /* ระบบแบ่งหน้า */
         .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
         .page-btn { background-color: white; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; color: #4b5563; }
         .page-btn.active { background-color: var(--bodin-blue); color: white; border-color: var(--bodin-blue); }
@@ -151,69 +161,4 @@
 
     <header>
         <h1>♻️ Bodin Point - AI แยกขยะจิตอาสา</h1>
-        <p>นวัตกรรมแยกขยะอัจฉริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)</p>
-    </header>
-
-    <div class="container">
-        
-        <div class="card" style="padding: 16px 24px;">
-            <label style="display:block; font-weight:700; margin-bottom:8px; font-size:15px; color:#4b5563;">ลิงก์โมเดลจาก Google Teachable Machine</label>
-            <input type="text" id="model-url" class="url-input" placeholder="https://teachablemachine.withgoogle.com/models/XXXXX/" value="">
-            <button class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="initModel()">เชื่อมต่อระบบ AI</button>
-            <div id="model-status" style="font-size:13px; margin-top:8px; color:#6b7280; font-weight:500;">สแกนจำลองอัตโนมัติ (กรอกลิงก์เพื่อเปิดใช้งาน AI จริง)</div>
-        </div>
-
-        <div class="card">
-            <div class="webcam-box">
-                <div class="webcam-placeholder" id="cam-status-text">🎥 กล้องปิดอยู่</div>
-                <div id="webcam-container"></div>
-            </div>
-
-            <div class="camera-control">
-                <span class="switch-label">ระบบสแกนขยะอัตโนมัติ</span>
-                <label class="switch">
-                    <input type="checkbox" id="camera-toggle" onchange="handleCameraToggle(this)">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-
-        <div class="result-card" id="result-card">
-            <div class="result-title" id="res-title">ตรวจพบขยะประเภท</div>
-            <div class="result-details" id="res-details">คำแนะนำในการทิ้งถังขยะ</div>
-            
-            <div class="bin-container">
-                <div class="bin-handle"></div>
-                <div class="bin-lid"></div>
-                <div class="bin-icon-text" id="bin-label">ถังขยะ</div>
-            </div>
-            <div style="font-size: 14px; margin-top: 5px; font-weight: 500;">AI มั่นใจ: <span id="res-confidence">0</span>%</div>
-        </div>
-
-        <div class="card" style="text-align: stretch;">
-            <div class="leaderboard-title">🏆 ตารางคะแนนรวมจิตอาสา Bodin Point</div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 15%; text-align: center;">อันดับ</th>
-                            <th style="width: 55%;">รหัสนักเรียน</th>
-                            <th style="width: 30%; text-align: right;">คะแนนรวม (แต้ม)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-body">
-                        </tbody>
-                </table>
-            </div>
-            <div class="pagination" id="pagination-container"></div>
-        </div>
-
-    </div>
-
-    <div class="modal-overlay" id="point-modal">
-        <div class="modal-box">
-            <div class="modal-title">✨ ตรวจจับภาพขยะสำเร็จ!</div>
-            <div class="modal-text">ต้องการสะสมคะแนน <b>Bodin Point จิตอาสาทำความดี</b> หรือไม่คะ?</div>
-            
-            <div id="input-score-section" style="display: none;">
-                <input type="number" id="student-id" class
+        <p>นวัตกรรมแยกขยะอัจฉริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิง
