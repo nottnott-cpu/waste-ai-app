@@ -2,8 +2,8 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI แยกขยะ - Waste Classifier AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bodin Waste Classifier AI</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
     
@@ -13,146 +13,187 @@
             --general-color: #2980b9;
             --organic-color: #27ae60;
             --hazardous-color: #c0392b;
-            --bg-color: #f8f9fa;
+            --bodin-blue: #1e3a8a;
+            --bg-color: #f3f4f6;
             --card-bg: #ffffff;
-            --text-color: #2c3e50;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: #1f2937;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
 
         header {
-            background-color: #2c3e50;
+            background-color: var(--bodin-blue);
             color: white;
             width: 100%;
             text-align: center;
-            padding: 20px 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            padding: 24px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        header h1 { margin: 0; font-size: 24px; }
-        header p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.8; }
+        header h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; }
+        header p { margin: 6px 0 0 0; font-size: 15px; opacity: 0.85; }
 
         .container {
-            max-width: 500px;
-            width: 90%;
+            max-width: 768px; /* ขนาดกว้างพอดีสำหรับ iPad */
+            width: 92%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .card {
             background: var(--card-bg);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
             text-align: center;
-            margin-bottom: 50px;
         }
 
-        .setup-section {
-            background-color: #edf2f7;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px dashed #cbd5e0;
-        }
-
-        .setup-section label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #4a5568;
-        }
-
+        /* ตกแต่งส่วนตั้งค่าโมเดล */
         .url-input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
+            padding: 14px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
             box-sizing: border-box;
-            font-size: 14px;
+            font-size: 16px;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            background-color: #f9fafb;
         }
 
-        .btn-load {
-            background-color: #4a5568;
+        .btn {
+            background-color: var(--bodin-blue);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 14px 28px;
+            border-radius: 14px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
         }
 
-        .upload-zone {
-            border: 3px dashed #cbd5e0;
-            padding: 30px 20px;
-            border-radius: 12px;
-            cursor: pointer;
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+
+        /* ส่วนควบคุมกล้องและแสดงผลระดับพรีเมียม */
+        .webcam-box {
             position: relative;
-            background-color: #f8fafc;
+            width: 100%;
+            max-width: 440px;
+            aspect-ratio: 4/3;
+            background-color: #111827;
+            border-radius: 20px;
+            margin: 0 auto 15px auto;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .upload-zone:hover {
-            border-color: #4299e1;
-            background-color: #ebf8ff;
+        #webcam-container video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
         }
 
-        .upload-icon { font-size: 40px; margin-bottom: 10px; }
-
-        #image-input {
+        .webcam-placeholder {
+            color: #9ca3af;
+            font-size: 16px;
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; cursor: pointer;
+            z-index: 1;
         }
 
-        .preview-container { margin-top: 25px; display: none; }
-        #image-preview {
-            max-width: 100%; max-height: 300px;
-            border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        /* ปุ่มเปิด/ปิดกล้องสไตล์ iPad Toggle */
+        .camera-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 10px;
         }
 
-        .loading { display: none; margin: 20px 0; font-weight: bold; color: #4a5568; }
+        .switch-label { font-size: 18px; font-weight: 600; color: #4b5563; }
 
-        /* ส่วนแสดงผลลัพธ์แบบเปลี่ยนสีตามเงื่อนไข */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px; width: 26px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider { background-color: #34d399; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* การ์ดแจ้งเตือนผลลัพธ์สีสดใสตามประเภทขยะ */
         .result-card {
-            margin-top: 25px; padding: 20px; border-radius: 12px;
-            color: white; display: none; box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            padding: 24px;
+            border-radius: 20px;
+            color: white;
+            display: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            animation: zoomIn 0.3s ease;
         }
 
-        .result-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
-        .result-details { font-size: 16px; margin-bottom: 15px; opacity: 0.9; }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
 
-        /* ตกแต่งถังขยะด้วย CSS */
+        .result-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+        .result-details { font-size: 18px; margin-bottom: 15px; opacity: 0.95; }
+
+        /* สไตล์ถังขยะ CSS */
         .bin-container {
-            display: inline-block; width: 80px; height: 100px; position: relative;
-            border-radius: 8px 8px 12px 12px; margin: 10px auto;
-            border: 4px solid rgba(255, 255, 255, 0.9); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: inline-block; width: 90px; height: 110px; position: relative;
+            border-radius: 10px 10px 14px 14px; margin: 10px auto;
+            border: 4px solid rgba(255, 255, 255, 0.9);
         }
-        .bin-lid {
-            width: 90px; height: 12px; background: rgba(255, 255, 255, 0.9);
-            position: absolute; top: -14px; left: -9px; border-radius: 6px 6px 2px 2px;
-        }
-        .bin-handle {
-            width: 30px; height: 8px; border: 3px solid rgba(255, 255, 255, 0.9);
-            border-bottom: none; position: absolute; top: -22px; left: 21px; border-radius: 4px 4px 0 0;
-        }
-        .bin-icon-text { color: white; font-weight: bold; font-size: 11px; margin-top: 35px; }
+        .bin-lid { width: 102px; height: 14px; background: rgba(255, 255, 255, 0.9); position: absolute; top: -16px; left: -10px; border-radius: 6px; }
+        .bin-handle { width: 34px; height: 8px; border: 3px solid rgba(255, 255, 255, 0.9); border-bottom: none; position: absolute; top: -24px; left: 25px; border-radius: 4px 4px 0 0; }
+        .bin-icon-text { color: white; font-weight: bold; font-size: 14px; margin-top: 40px; }
 
-        /* สไตล์สีแยกประเภทถังขยะตามที่กำหนด */
-        .bg-recycle { background-color: var(--recycle-color); color: #2c3e50 !important; }
-        .bg-recycle .bin-container { background-color: var(--recycle-color); border-color: #2c3e50; }
-        .bg-recycle .bin-lid, .bg-recycle .bin-handle { background: #2c3e50; }
-        .bg-recycle .bin-handle { border-color: #2c3e50; background: transparent; }
-        .bg-recycle .bin-icon-text { color: #2c3e50; }
+        /* สีธีมของถังขยะแต่ละประเภท */
+        .bg-recycle { background-color: var(--recycle-color); color: #1e293b !important; }
+        .bg-recycle .bin-container { background-color: var(--recycle-color); border-color: #1e293b; }
+        .bg-recycle .bin-lid, .bg-recycle .bin-handle { background: #1e293b; }
+        .bg-recycle .bin-handle { border-color: #1e293b; background: transparent; }
+        .bg-recycle .bin-icon-text { color: #1e293b; }
 
         .bg-general { background-color: var(--general-color); }
         .bg-general .bin-container { background-color: var(--general-color); }
@@ -163,106 +204,223 @@
         .bg-hazardous { background-color: var(--hazardous-color); }
         .bg-hazardous .bin-container { background-color: var(--hazardous-color); }
 
-        .confidence-bar-container {
-            background-color: rgba(255,255,255,0.3); border-radius: 10px;
-            height: 10px; width: 80%; margin: 10px auto 0 auto; overflow: hidden;
+        /* Popup สไตล์ iPadOS Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
         }
-        .confidence-bar { background-color: white; height: 100%; width: 0%; transition: width 0.5s; }
-        .bg-recycle .confidence-bar { background-color: #2c3e50; }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-box {
+            background: white;
+            width: 85%;
+            max-width: 420px;
+            padding: 28px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+
+        .modal-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); margin-bottom: 10px; }
+        .modal-text { font-size: 16px; color: #4b5563; margin-bottom: 20px; line-height: 1.5; }
+
+        .bodin-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 18px;
+            text-align: center;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        .bodin-input:focus { border-color: var(--bodin-blue); outline: none; }
+
+        .modal-buttons { display: flex; gap: 12px; justify-content: center; }
+        .btn-secondary { background-color: #f3f4f6; color: #4b5563; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>♻️ AI แอปพลิเคชันแยกขยะ</h1>
-        <p>ถ่ายรูปหรืออัปโหลดรูปภาพขยะเพื่อวิเคราะห์ประเภทถังขยะ</p>
+        <h1>♻️ Bodin Point - AI แยกขยะจิตอาสา</h1>
+        <p>นวัตกรรมแยกขยะอัจฉตริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)</p>
     </header>
 
     <div class="container">
         
-        <div class="setup-section">
-            <label for="model-url">1. วางลิงก์โมเดล Teachable Machine ของคุณ</label>
+        <div class="card" style="padding: 16px 24px;">
+            <label style="display:block; font-weight:700; margin-bottom:8px; font-size:15px; color:#4b5563;">ลิงก์โมเดลจาก Google Teachable Machine</label>
             <input type="text" id="model-url" class="url-input" placeholder="https://teachablemachine.withgoogle.com/models/XXXXX/" value="">
-            <button class="btn-load" onclick="initModel()">โหลดโมเดล AI</button>
-            <div id="model-status" style="font-size:12px; margin-top:5px; color:#718096;">ระบบเปิดโหมดทดสอบอัตโนมัติ (จะสุ่มถังขยะให้ดูหน้าตา UI จนกว่าจะโหลดโมเดลจริง)</div>
+            <button class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="initModel()">เชื่อมต่อระบบ AI</button>
+            <div id="model-status" style="font-size:13px; margin-top:8px; color:#6b7280; font-weight:500;">สแกนจำลองอัตโนมัติ (กรอกลิงก์เพื่อเปิดใช้งาน AI จริง)</div>
         </div>
 
-        <div class="upload-zone">
-            <div class="upload-icon">📸</div>
-            <p style="margin: 5px 0; font-weight: bold;">กดที่นี่เพื่อถ่ายภาพ หรือเลือกจากคลังภาพในมือถือ</p>
-            <input type="file" id="image-input" accept="image/*">
-        </div>
+        <div class="card">
+            <div class="webcam-box">
+                <div class="webcam-placeholder" id="cam-status-text">🎥 กล้องปิดอยู่</div>
+                <div id="webcam-container"></div>
+            </div>
 
-        <div class="preview-container" id="preview-container">
-            <img id="image-preview" src="#" alt="ตัวอย่างภาพขยะ">
+            <div class="camera-control">
+                <span class="switch-label">ระบบสแกนขยะอัตโนมัติ</span>
+                <label class="switch">
+                    <input type="checkbox" id="camera-toggle" onchange="handleCameraToggle(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
-
-        <div class="loading" id="loading-text">AI กำลังประมวลผลส่วนประกอบขยะ...</div>
 
         <div class="result-card" id="result-card">
-            <div class="result-title" id="res-title">ประเภทขยะ</div>
-            <div class="result-details" id="res-details">องค์ประกอบ...</div>
+            <div class="result-title" id="res-title">ตรวจพบขยะประเภท</div>
+            <div class="result-details" id="res-details">คำแนะนำในการทิ้งถังขยะ</div>
             
-            <div class="bin-container" id="bin-graphic">
+            <div class="bin-container">
                 <div class="bin-handle"></div>
                 <div class="bin-lid"></div>
                 <div class="bin-icon-text" id="bin-label">ถังขยะ</div>
             </div>
+            <div style="font-size: 14px; margin-top: 5px; font-weight: 500;">AI มั่นใจ: <span id="res-confidence">0</span>%</div>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="point-modal">
+        <div class="modal-box">
+            <div class="modal-title">✨ ขอบคุณที่ช่วยแยกขยะนะคะ!</div>
+            <div class="modal-text">ต้องการสะสมคะแนน <b>Bodin Point จิตอาสาทำความดี</b> หรือไม่คะ?</div>
             
-            <div style="font-size: 13px; margin-top: 10px;">ความแม่นยำ: <span id="res-confidence">0</span>%</div>
-            <div class="confidence-bar-container"><div class="confidence-bar" id="confidence-bar"></div></div>
+            <div id="input-score-section" style="display: none;">
+                <input type="number" id="student-id" class="bodin-input" placeholder="กรอกรหัสนักเรียนบดินทร" pattern="[0-9]*" inputmode="numeric">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="btn-no" onclick="closeModal(false)">ไม่ต้องการ</button>
+                <button class="btn" id="btn-yes" onclick="activateInput()">ต้องการสะสม</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let model, isModelLoaded = false;
+        let model, webcam, maxPredictions;
+        let isModelLoaded = false;
+        let isScanning = false;
+        let lastSpokenText = "";
+        let scanInterval;
 
+        // 1. ระบบดึงเสียงสังเคราะห์ภาษาไทย (Safari รองรับผ่าน Web Speech API)
+        function speakThai(text) {
+            if ('speechSynthesis' in window) {
+                // ยกเลิกคิวเสียงเก่าที่ค้างอยู่เพื่อให้ตอบสนองไวขึ้น
+                window.speechSynthesis.cancel(); 
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'th-TH';
+                utterance.rate = 1.0; // ความเร็วมาตรฐาน
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 2. โหลดโมเดล AI จาก Teachable Machine
         async function initModel() {
             const modelURLInput = document.getElementById('model-url').value.trim();
             const statusDiv = document.getElementById('model-status');
-            if (!modelURLInput) { alert('กรุณากรอกลิงก์ก่อนครับ'); return; }
+            if (!modelURLInput) { alert('กรุณากรอกลิงก์โมเดลก่อนค่ะ'); return; }
 
-            statusDiv.innerText = "กำลังเชื่อมต่อโมเดล AI...";
-            statusDiv.style.color = "#d69e2e";
+            statusDiv.innerText = "กำลังเชื่อมต่อคลาวด์โมเดล...";
+            statusDiv.style.color = "#d97706";
 
             try {
                 let baseUrl = modelURLInput.endsWith('/') ? modelURLInput : modelURLInput + '/';
                 model = await tmImage.load(baseUrl + "model.json", baseUrl + "metadata.json");
+                maxPredictions = model.getTotalClasses();
                 isModelLoaded = true;
-                statusDiv.innerText = "✅ โหลดโมเดลเรียบร้อย! พร้อมใช้งานแยกขยะจริง";
-                statusDiv.style.color = "#27ae60";
+                statusDiv.innerText = "✅ เชื่อมต่อระบบ AI บดินทรสำเร็จแล้ว! พร้อมสแกนขยะ";
+                statusDiv.style.color = "#059669";
             } catch (e) {
-                statusDiv.innerText = "❌ โหลดล้มเหลว ตรวจสอบลิงก์ในช่องว่างอีกครั้ง";
-                statusDiv.style.color = "#c0392b";
+                statusDiv.innerText = "❌ ผิดพลาด: โปรดตรวจสอบลิงก์อีกครั้ง";
+                statusDiv.style.color = "#dc2626";
+                isModelLoaded = false;
             }
         }
 
-        document.getElementById('image-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const imgElement = document.getElementById('image-preview');
-                imgElement.src = event.target.result;
-                document.getElementById('preview-container').style.display = 'block';
-                document.getElementById('result-card').style.display = 'none';
-                document.getElementById('loading-text').style.display = 'block';
-                
-                imgElement.onload = async function() {
-                    if (isModelLoaded) {
-                        await predictTrash(imgElement);
-                    } else {
-                        // โหมด Demo สุ่มผลลัพธ์เพื่อให้เห็น UI การเปลี่ยนสีและการแจ้งเตือน
-                        setTimeout(() => { predictMockup(); }, 1000);
-                    }
+        // 3. จัดการสวิตช์ เปิด/ปิดกล้อง
+        async function handleCameraToggle(toggle) {
+            const camText = document.getElementById('cam-status-text');
+            
+            if (toggle.checked) {
+                camText.innerText = "🔄 กำลังเปิดระบบกล้อง...";
+                try {
+                    // ตั้งค่ากล้องความละเอียดที่พอเหมาะเพื่อให้สตรีมภาพลื่นไหลบน iPad
+                    webcam = new tmImage.Webcam(400, 300, true); 
+                    await webcam.setup({ facingMode: "environment" }); // ใช้กล้องหลังของ iPad เป็นหลัก
+                    await webcam.play();
+                    
+                    document.getElementById('webcam-container').innerHTML = "";
+                    document.getElementById('webcam-container').appendChild(webcam.canvas);
+                    camText.style.display = "none";
+                    
+                    isScanning = true;
+                    startScanningLoop();
+                } catch (err) {
+                    console.error(err);
+                    alert("ไม่สามารถเข้าถึงกล้องได้ค่ะ โปรดตรวจสอบการอนุญาตสิทธิ์กล้องบน Safari");
+                    toggle.checked = false;
+                    camText.innerText = "🎥 กล้องปิดอยู่";
                 }
+            } else {
+                stopCamera();
             }
-            reader.readAsDataURL(file);
-        });
+        }
 
-        async function predictTrash(imageElement) {
-            const prediction = await model.predict(imageElement);
+        function stopCamera() {
+            isScanning = false;
+            clearInterval(scanInterval);
+            if (webcam) {
+                webcam.stop();
+            }
+            document.getElementById('webcam-container').innerHTML = "";
+            document.getElementById('cam-status-text').style.display = "block";
+            document.getElementById('cam-status-text').innerText = "🎥 กล้องปิดอยู่";
+            document.getElementById('result-card').style.display = "none";
+        }
+
+        // 4. ลูปการทำงานตรวจจับขยะ
+        function startScanningLoop() {
+            scanInterval = setInterval(async () => {
+                if (!isScanning) return;
+                webcam.update(); // อัปเดตเฟรมภาพจากกล้อง
+                
+                if (isModelLoaded) {
+                    await predictLive();
+                } else {
+                    // โหมดสุ่มจำลองสถานการณ์ตรวจจับขยะอัตโนมัติ (กรณีไม่มีลิงก์โมเดล)
+                    clearInterval(scanInterval);
+                    predictMockup();
+                }
+            }, 100); // ทำนายทุกๆ 0.1 วินาที
+        }
+
+        // 5. ทำนายภาพจากกล้องจริงด้วย AI
+        async function predictLive() {
+            const prediction = await model.predict(webcam.canvas);
             let highestIndex = 0;
             let highestValue = 0;
             
@@ -273,63 +431,120 @@
                 }
             }
 
-            const className = prediction[highestIndex].className.toLowerCase();
             const confidence = Math.round(prediction[highestIndex].probability * 100);
+            
+            // AI ต้องมั่นใจมากกว่า 85% ถึงจะเริ่มตัดหน้าจอแจ้งเตือนและออกเสียง
+            if (confidence > 85) {
+                isScanning = false; // หยุดสแกนชั่วคราว
+                const className = prediction[highestIndex].className.toLowerCase();
+                
+                let trashType = 'general';
+                if (className.includes('recycle') || className.includes('รีไซเคิล') || className.includes('เหลือง')) trashType = 'recycle';
+                else if (className.includes('general') || className.includes('ทั่วไป') || className.includes('น้ำเงิน')) trashType = 'general';
+                else if (className.includes('organic') || className.includes('เปียก') || className.includes('เขียว')) trashType = 'organic';
+                else if (className.includes('hazard') || className.includes('อันตราย') || className.includes('แดง')) trashType = 'hazardous';
 
-            // คัดกรองตามชื่อคลาสที่คุณตั้งไว้ใน Teachable Machine (แนะนำให้ตั้งชื่อคลาสมีคำเหล่านี้ปนอยู่)
-            if (className.includes('recycle') || className.includes('รีไซเคิล') || className.includes('เหลือง')) {
-                displayResult('recycle', confidence);
-            } else if (className.includes('general') || className.includes('ทั่วไป') || className.includes('น้ำเงิน')) {
-                displayResult('general', confidence);
-            } else if (className.includes('organic') || className.includes('เปียก') || className.includes('เขียว')) {
-                displayResult('organic', confidence);
-            } else if (className.includes('hazard') || className.includes('อันตราย') || className.includes('แดง')) {
-                displayResult('hazardous', confidence);
-            } else {
-                const fallbackTypes = ['recycle', 'general', 'organic', 'hazardous'];
-                displayResult(fallbackTypes[highestIndex % 4], confidence);
+                processTrashResult(trashType, confidence);
             }
         }
 
+        // ระบบสุ่มทดสอบการแจ้งเตือนและการทำงาน (ใช้ทดสอบตอนยังไม่มีโมเดล)
         function predictMockup() {
             const types = ['recycle', 'general', 'organic', 'hazardous'];
-            displayResult(types[Math.floor(Math.random() * types.length)], Math.floor(Math.random() * 15) + 85);
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            processTrashResult(randomType, 95);
         }
 
-        function displayResult(type, confidence) {
-            document.getElementById('loading-text').style.display = 'none';
+        // 6. ประมวลผลลัพธ์: เปลี่ยนสีหน้าจอ -> พูดออกเสียง -> เปิด Popup แต้มสะสม
+        function processTrashResult(type, confidence) {
             const card = document.getElementById('result-card');
             const title = document.getElementById('res-title');
             const details = document.getElementById('res-details');
             const binLabel = document.getElementById('bin-label');
             
             card.className = "result-card";
+            let speechMessage = "";
             
             if (type === 'recycle') {
                 card.classList.add('bg-recycle');
-                title.innerText = "ขยะรีไซเคิล (ถังสีเหลือง) 🟡";
-                details.innerText = "องค์ประกอบขยะ: ขวดพลาสติก, กระป๋องอลูมิเนียม, กล่องกระดาษ";
+                title.innerText = "ขยะรีไซเคิล (ทิ้งลงถังสีเหลือง) 🟡";
+                details.innerText = "ส่วนประกอบ: ขวดพลาสติก, กระป๋องอลูมิเนียม, กล่องกระดาษ";
                 binLabel.innerText = "รีไซเคิล";
+                speechMessage = "ขยะรีไซเคิล โปรดทิ้งลงถังสีเหลืองค่ะ";
             } else if (type === 'general') {
                 card.classList.add('bg-general');
-                title.innerText = "ขยะทั่วไป (ถังสีน้ำเงิน) 🔵";
-                details.innerText = "องค์ประกอบขยะ: ซองขนม, ถุงพลาสติกเปื้อนอาหาร";
+                title.innerText = "ขยะทั่วไป (ทิ้งลงถังสีน้ำเงิน) 🔵";
+                details.innerText = "ส่วนประกอบ: ซองขนม, ถุงพลาสติกเปื้อนเศษอาหาร";
                 binLabel.innerText = "ทั่วไป";
+                speechMessage = "ขยะทั่วไป โปรดทิ้งลงถังสีน้ำเงินค่ะ";
             } else if (type === 'organic') {
                 card.classList.add('bg-organic');
-                title.innerText = "ขยะเปียก/อินทรีย์ (ถังสีเขียว) 🟢";
-                details.innerText = "องค์ประกอบขยะ: เศษอาหาร, เปลือกผลไม้";
+                title.innerText = "ขยะเปียก / อินทรีย์ (ทิ้งลงถังสีเขียว) 🟢";
+                details.innerText = "ส่วนประกอบ: เศษอาหาร, เปลือกผลไม้, เศษใบไม้พืชผัก";
                 binLabel.innerText = "ขยะเปียก";
+                speechMessage = "ขยะเปียกอินทรีย์ โปรดทิ้งลงถังสีเขียวค่ะ";
             } else if (type === 'hazardous') {
                 card.classList.add('bg-hazardous');
-                title.innerText = "ขยะอันตราย (ถังสีแดง) 🔴";
-                details.innerText = "องค์ประกอบขยะ: ถ่านไฟฉาย, หลอดไฟ";
+                title.innerText = "ขยะอันตราย (ทิ้งลงถังสีแดง) 🔴";
+                details.innerText = "ส่วนประกอบ: ถ่านไฟฉาย, หลอดไฟ, แบตเตอรี่, ขยะสารเคมี";
                 binLabel.innerText = "อันตราย";
+                speechMessage = "ขยะอันตราย โปรดทิ้งลงถังสีแดงค่ะ";
             }
 
             document.getElementById('res-confidence').innerText = confidence;
             card.style.display = 'block';
-            setTimeout(() => { document.getElementById('confidence-bar').style.width = confidence + '%'; }, 50);
+
+            // สั่งงานเสียงพูดออกลำโพง
+            speakThai(speechMessage);
+
+            // หน่วงเวลา 2.5 วินาทีเพื่อให้ทิ้งขยะและฟังเสียงเสร็จ ก่อนเปิดกล่องรับคะแนนสะสม Bodin Point
+            setTimeout(() => {
+                openModal();
+            }, 2500);
+        }
+
+        // 7. ระบบควบคุมหน้าต่าง Popup จิตอาสา Bodin Point
+        function openModal() {
+            // ตั้งค่าหน้าต่างเริ่มต้น
+            document.getElementById('input-score-section').style.display = 'none';
+            document.getElementById('student-id').value = "";
+            
+            const btnYes = document.getElementById('btn-yes');
+            btnYes.innerText = "ต้องการสะสม";
+            btnYes.setAttribute("onclick", "activateInput()");
+            
+            document.getElementById('point-modal').classList.add('active');
+        }
+
+        function activateInput() {
+            // เปลี่ยนโหมดในคาร์ดเป็นช่องกรอกข้อมูลรหัส
+            document.getElementById('input-score-section').style.display = 'block';
+            document.getElementById('student-id').focus(); // คีย์บอร์ดเด้งบน iPad ทันที
+            
+            const btnYes = document.getElementById('btn-yes');
+            btnYes.innerText = "ตกลง (บันทึกแต้ม)";
+            btnYes.setAttribute("onclick", "closeModal(true)");
+        }
+
+        function closeModal(isSaveData) {
+            if (isSaveData) {
+                const studentId = document.getElementById('student-id').value.trim();
+                if (!studentId) {
+                    alert("กรุณากรอกรหัสนักเรียนบดินทรก่อนกดตกลงค่ะ");
+                    return;
+                }
+                alert("🎉 บันทึกแต้ม Bodin Point รหัส " + studentId + " เรียบร้อย! อนุโมทนาบุญจิตอาสาค่ะ");
+            }
+            
+            // ปิดหน้าต่างโมเดลกลับสู่หน้าหลัก
+            document.getElementById('point-modal').classList.remove('active');
+            document.getElementById('result-card').style.display = "none";
+            
+            // เคลียร์และรันกล้องเพื่อสแกนขยะชิ้นถัดไปต่อทันที (ถ้ายังเปิดสวิตช์กล้องอยู่)
+            if (document.getElementById('camera-toggle').checked) {
+                isScanning = true;
+                startScanningLoop();
+            }
         }
     </script>
 </body>
