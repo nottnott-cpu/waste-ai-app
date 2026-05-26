@@ -161,4 +161,415 @@
 
     <header>
         <h1>♻️ Bodin Point - AI แยกขยะจิตอาสา</h1>
-        <p>นวัตกรรมแยกขยะอัจฉริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิง
+        <p>นวัตกรรมแยกขยะอัจฉริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="card" style="padding: 16px 24px;">
+            <label style="display:block; font-weight:700; margin-bottom:8px; font-size:15px; color:#4b5563;">ลิงก์โมเดลจาก Google Teachable Machine</label>
+            <input type="text" id="model-url" class="url-input" placeholder="https://teachablemachine.withgoogle.com/models/XXXXX/" value="">
+            <button class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="initModel()">เชื่อมต่อระบบ AI</button>
+            <div id="model-status" style="font-size:13px; margin-top:8px; color:#6b7280; font-weight:500;">สแกนจำลองอัตโนมัติ (กรอกลิงก์เพื่อเปิดใช้งาน AI จริง)</div>
+        </div>
+
+        <div class="card">
+            <div class="webcam-box">
+                <div class="webcam-placeholder" id="cam-status-text">🎥 กล้องปิดอยู่</div>
+                <div id="webcam-container"></div>
+            </div>
+
+            <div class="camera-control">
+                <span class="switch-label">ระบบสแกนขยะอัตโนมัติ</span>
+                <label class="switch">
+                    <input type="checkbox" id="camera-toggle" onchange="handleCameraToggle(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="result-card" id="result-card">
+            <div class="result-title" id="res-title">ตรวจพบขยะประเภท</div>
+            <div class="result-details" id="res-details">คำแนะนำในการทิ้งถังขยะ</div>
+            
+            <div class="bin-container">
+                <div class="bin-handle"></div>
+                <div class="bin-lid"></div>
+                <div class="bin-icon-text" id="bin-label">ถังขยะ</div>
+            </div>
+            <div style="font-size: 14px; margin-top: 5px; font-weight: 500;">AI มั่นใจ: <span id="res-confidence">0</span>%</div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📊 ค้นหาสถิติคะแนนจิตอาสารายบุคคล</div>
+            <div class="search-box-container">
+                <input type="number" id="search-student-id" class="search-input" placeholder="กรอกรหัสนักเรียน เพื่อดูสถิติ" pattern="[0-9]*" inputmode="numeric">
+                <button class="btn" style="padding: 0 20px;" onclick="searchStudentStats()">ค้นหา</button>
+            </div>
+
+            <div class="stats-dashboard" id="personal-dashboard">
+                <div class="stats-box">
+                    <div class="stats-lbl">🎖️ อันดับในโรงเรียน</div>
+                    <div class="stats-val" id="stat-rank">-</div>
+                </div>
+                <div class="stats-box">
+                    <div class="stats-lbl">✨ คะแนนรวมทั้งหมด</div>
+                    <div class="stats-val" id="stat-points">0 แต้มน</div>
+                </div>
+                <div class="stats-box" style="grid-column: span 2;">
+                    <div class="stats-lbl">📦 จำนวนชิ้นขยะที่ช่วยแยกแยะสำเร็จ</div>
+                    <div class="stats-val" id="stat-items" style="color: var(--organic-color);">0 ชิ้น</div>
+                    <div style="background-color: #e2e8f0; border-radius: 10px; height: 8px; margin-top: 10px; overflow: hidden;">
+                        <div id="stat-progress" style="background-color: var(--organic-color); height: 100%; width: 0%; transition: width 0.5s;"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="search-error-msg" style="font-size: 14px; color: #9ca3af; margin-top: 10px; font-weight: 500;">ระบุรหัสนักเรียนและกดค้นหาเพื่อดูข้อมูลเชิงลึก</div>
+        </div>
+
+        <div class="card" style="text-align: stretch;">
+            <div class="section-title">🏆 ตารางคะแนนรวมจิตอาสา Bodin Point</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%; text-align: center;">อันดับ</th>
+                            <th style="width: 55%;">รหัสนักเรียน</th>
+                            <th style="width: 30%; text-align: right;">คะแนนรวม (แต้ม)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        </tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination-container"></div>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="point-modal">
+        <div class="modal-box">
+            <div class="modal-title">✨ ตรวจจับภาพขยะสำเร็จ!</div>
+            <div class="modal-text">ต้องการสะสมคะแนน <b>Bodin Point จิตอาสาทำความดี</b> หรือไม่คะ?</div>
+            
+            <div id="input-score-section" style="display: none;">
+                <input type="number" id="student-id" class="bodin-input" placeholder="กรอกรหัสนักเรียน 5 หลัก" pattern="[0-9]*" inputmode="numeric">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="btn-no" onclick="closeModal(false)">ไม่ต้องการ</button>
+                <button class="btn" id="btn-yes" onclick="activateInput()">ต้องการสะสม</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let model, webcam, maxPredictions;
+        let isModelLoaded = false;
+        let isScanning = false;
+        let scanInterval;
+
+        // ระบบจำลองฐานข้อมูลเก็บคะแนนใน LocalStorage ข้อมูลไม่หายแม้มือถือรีเฟรช
+        let scoreBoardData = JSON.parse(localStorage.getItem('bodin_points')) || [
+            { id: "54321", points: 85 }, { id: "12345", points: 72 }, { id: "67890", points: 64 },
+            { id: "11122", points: 50 }, { id: "33445", points: 45 }, { id: "99887", points: 30 },
+            { id: "55566", points: 25 }, { id: "77788", points: 15 }, { id: "22233", points: 10 }
+        ];
+
+        let currentPage = 1;
+        const rowsPerPage = 5;
+
+        // ระบบออกเสียงสังเคราะห์ภาษาไทย
+        function speakThai(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); 
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'th-TH';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        async function initModel() {
+            const modelURLInput = document.getElementById('model-url').value.trim();
+            const statusDiv = document.getElementById('model-status');
+            if (!modelURLInput) { alert('กรุณากรอกลิงก์โมเดลก่อนค่ะ'); return; }
+            statusDiv.innerText = "กำลังเชื่อมต่อคลาวด์โมเดล...";
+            statusDiv.style.color = "#d97706";
+            try {
+                let baseUrl = modelURLInput.endsWith('/') ? modelURLInput : modelURLInput + '/';
+                model = await tmImage.load(baseUrl + "model.json", baseUrl + "metadata.json");
+                isModelLoaded = true;
+                statusDiv.innerText = "✅ เชื่อมต่อระบบ AI บดินทรสำเร็จแล้ว!";
+                statusDiv.style.color = "#059669";
+            } catch (e) {
+                statusDiv.innerText = "❌ ลิงก์โมเดลไม่ถูกต้อง";
+                statusDiv.style.color = "#dc2626";
+            }
+        }
+
+        async function handleCameraToggle(toggle) {
+            const camText = document.getElementById('cam-status-text');
+            if (toggle.checked) {
+                camText.innerText = "🔄 กำลังเปิดระบบกล้อง...";
+                try {
+                    webcam = new tmImage.Webcam(400, 300, true); 
+                    await webcam.setup({ facingMode: "environment" }); 
+                    await webcam.play();
+                    document.getElementById('webcam-container').innerHTML = "";
+                    document.getElementById('webcam-container').appendChild(webcam.canvas);
+                    camText.style.display = "none";
+                    isScanning = true;
+                    startScanningLoop();
+                } catch (err) {
+                    alert("ไม่สามารถเปิดกล้องบน Safari ได้ค่ะ");
+                    toggle.checked = false;
+                    camText.innerText = "🎥 กล้องปิดอยู่";
+                }
+            } else {
+                stopCamera();
+            }
+        }
+
+        function stopCamera() {
+            isScanning = false;
+            clearInterval(scanInterval);
+            if (webcam) webcam.stop();
+            document.getElementById('webcam-container').innerHTML = "";
+            document.getElementById('cam-status-text').style.display = "block";
+            document.getElementById('cam-status-text').innerText = "🎥 กล้องปิดอยู่";
+            document.getElementById('result-card').style.display = "none";
+        }
+
+        function startScanningLoop() {
+            scanInterval = setInterval(async () => {
+                if (!isScanning) return;
+                webcam.update();
+                if (isModelLoaded) {
+                    await predictLive();
+                } else {
+                    clearInterval(scanInterval);
+                    predictMockup();
+                }
+            }, 100);
+        }
+
+        async function predictLive() {
+            const prediction = await model.predict(webcam.canvas);
+            let highestIndex = 0;
+            let highestValue = 0;
+            for (let i = 0; i < prediction.length; i++) {
+                if (prediction[i].probability > highestValue) {
+                    highestValue = prediction[i].probability;
+                    highestIndex = i;
+                }
+            }
+            const confidence = Math.round(prediction[highestIndex].probability * 100);
+            
+            if (confidence > 85) {
+                isScanning = false;
+                const className = prediction[highestIndex].className.toLowerCase();
+                let trashType = 'general';
+                if (className.includes('recycle') || className.includes('รีไซเคิล') || className.includes('เหลือง')) trashType = 'recycle';
+                else if (className.includes('general') || className.includes('ทั่วไป') || className.includes('น้ำเงิน')) trashType = 'general';
+                else if (className.includes('organic') || className.includes('เปียก') || className.includes('เขียว')) trashType = 'organic';
+                else if (className.includes('hazard') || className.includes('อันตราย') || className.includes('แดง')) trashType = 'hazardous';
+
+                processTrashResult(trashType, confidence);
+            }
+        }
+
+        function predictMockup() {
+            const types = ['recycle', 'general', 'organic', 'hazardous'];
+            processTrashResult(types[Math.floor(Math.random() * types.length)], 95);
+        }
+
+        function processTrashResult(type, confidence) {
+            const card = document.getElementById('result-card');
+            const title = document.getElementById('res-title');
+            const details = document.getElementById('res-details');
+            const binLabel = document.getElementById('bin-label');
+            
+            card.className = "result-card";
+            let speechMessage = "";
+            
+            if (type === 'recycle') {
+                card.classList.add('bg-recycle'); title.innerText = "ขยะรีไซเคิล (ถังสีเหลือง) 🟡";
+                details.innerText = "ขวดพลาสติก, กระป๋องอลูมิเนียม, กล่องกระดาษ"; binLabel.innerText = "รีไซเคิล";
+                speechMessage = "ขยะรีไซเคิล โปรดทิ้งลงถังสีเหลืองค่ะ";
+            } else if (type === 'general') {
+                card.classList.add('bg-general'); title.innerText = "ขยะทั่วไป (ถังสีน้ำเงิน) 🔵";
+                details.innerText = "ซองขนม, ถุงพลาสติกเปื้อนเศษอาหาร"; binLabel.innerText = "ทั่วไป";
+                speechMessage = "ขยะทั่วไป โปรดทิ้งลงถังสีน้ำเงินค่ะ";
+            } else if (type === 'organic') {
+                card.classList.add('bg-organic'); title.innerText = "ขยะเปียก / อินทรีย์ (ถังสีเขียว) 🟢";
+                details.innerText = "เศษอาหาร, เปลือกผลไม้, เศษผักใบไม้"; binLabel.innerText = "ขยะเปียก";
+                speechMessage = "ขยะเปียกอินทรีย์ โปรดทิ้งลงถังสีเขียวค่ะ";
+            } else if (type === 'hazardous') {
+                card.classList.add('bg-hazardous'); title.innerText = "ขยะอันตราย (ถังสีแดง) 🔴";
+                details.innerText = "ถ่านไฟฉาย, หลอดไฟ, แบตเตอรี่, สารเคมี"; binLabel.innerText = "อันตราย";
+                speechMessage = "ขยะอันตราย โปรดทิ้งลงถังสีแดงค่ะ";
+            }
+
+            document.getElementById('res-confidence').innerText = confidence;
+            card.style.display = 'block';
+
+            // หน่วงเวลา 2 วินาทีก่อนส่งเสียงแจ้งเตือน
+            setTimeout(() => {
+                speakThai(speechMessage);
+                setTimeout(() => { openModal(); }, 1500);
+            }, 2000); 
+        }
+
+        function openModal() {
+            document.getElementById('input-score-section').style.display = 'none';
+            document.getElementById('student-id').value = "";
+            const btnYes = document.getElementById('btn-yes');
+            btnYes.innerText = "ต้องการสะสม";
+            btnYes.setAttribute("onclick", "activateInput()");
+            document.getElementById('point-modal').classList.add('active');
+        }
+
+        function activateInput() {
+            document.getElementById('input-score-section').style.display = 'block';
+            document.getElementById('student-id').focus();
+            const btnYes = document.getElementById('btn-yes');
+            btnYes.innerText = "ตกลง (บันทึกแต้ม)";
+            btnYes.setAttribute("onclick", "closeModal(true)");
+        }
+
+        function closeModal(isSaveData) {
+            if (isSaveData) {
+                const studentId = document.getElementById('student-id').value.trim();
+                if (!studentId) { alert("กรุณากรอกรหัสนักเรียนก่อนค่ะ"); return; }
+                
+                let studentIndex = scoreBoardData.findIndex(item => item.id === studentId);
+                if (studentIndex !== -1) {
+                    scoreBoardData[studentIndex].points += 5;
+                } else {
+                    scoreBoardData.push({ id: studentId, points: 5 });
+                }
+                
+                localStorage.setItem('bodin_points', JSON.stringify(scoreBoardData));
+                renderLeaderboard();
+                
+                // อัปเดตรีเฟรชผลหน้าแดชบอร์ดค้นหาด้วย ถ้าเปิดค้างไว้อยู่
+                if (document.getElementById('search-student-id').value.trim() === studentId) {
+                    searchStudentStats();
+                }
+                
+                alert("🎉 สะสมคะแนน Bodin Point รหัส " + studentId + " เรียบร้อยแล้วค่ะ (+5 คะแนน)");
+            }
+            
+            document.getElementById('point-modal').classList.remove('active');
+            document.getElementById('result-card').style.display = "none";
+            
+            if (document.getElementById('camera-toggle').checked) {
+                isScanning = true;
+                startScanningLoop();
+            }
+        }
+
+        // 🏆 ระบบคำนวณและแสดงผลตารางคะแนน (จัดเรียงจากมากไปน้อย + แบ่งหน้า)
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = "";
+
+            // จัดการเรียงคะแนนจากมากไปน้อย
+            scoreBoardData.sort((a, b) => b.points - a.points);
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const paginatedItems = scoreBoardData.slice(startIndex, endIndex);
+
+            paginatedItems.forEach((item, index) => {
+                const globalRank = startIndex + index + 1;
+                let rankDisplay = `<span class="rank-badge">${globalRank}</span>`;
+                
+                if (globalRank === 1) rankDisplay = `<span class="rank-badge rank-1">🥇</span>`;
+                else if (globalRank === 2) rankDisplay = `<span class="rank-badge rank-2">🥈</span>`;
+                else if (globalRank === 3) rankDisplay = `<span class="rank-badge rank-3">🥉</span>`;
+
+                const row = `<tr>
+                    <td style="text-align: center;">${rankDisplay}</td>
+                    <td style="font-weight: 600;">รหัสนักเรียน ${item.id}</td>
+                    <td style="text-align: right; font-weight: 700; color: var(--bodin-blue);">${item.points.toLocaleString()}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+
+            renderPaginationControls();
+        }
+
+        function renderPaginationControls() {
+            const container = document.getElementById('pagination-container');
+            container.innerHTML = "";
+            const totalPages = Math.ceil(scoreBoardData.length / rowsPerPage);
+            if (totalPages <= 1) return;
+
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn'; prevBtn.innerText = '‹'; prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { currentPage--; renderLeaderboard(); };
+            container.appendChild(prevBtn);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${currentPage === i ? 'active' : ''}`;
+                pageBtn.innerText = i;
+                pageBtn.onclick = () => { currentPage = i; renderLeaderboard(); };
+                container.appendChild(pageBtn);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn'; nextBtn.innerText = '›'; nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => { currentPage++; renderLeaderboard(); };
+            container.appendChild(nextBtn);
+        }
+
+        // 📊 ฟังก์ชันตรวจสอบสถิติคะแนนของนักเรียนแต่ละคน (ฟีเจอร์เพิ่มใหม่)
+        function searchStudentStats() {
+            const searchId = document.getElementById('search-student-id').value.trim();
+            const dashboard = document.getElementById('personal-dashboard');
+            const errorMsg = document.getElementById('search-error-msg');
+            
+            if (!searchId) {
+                alert("กรุณาระบุรหัสนักเรียนที่ต้องการค้นหาก่อนค่ะ");
+                return;
+            }
+
+            // จัดเรียงลำดับคะแนนรวมทุกครั้งเพื่อหาตำแหน่งอันดับ (Rank) ที่ถูกต้อง
+            scoreBoardData.sort((a, b) => b.points - a.points);
+            
+            // ค้นหาตำแหน่งอาสาสมัครในอาร์เรย์ข้อมูล
+            const studentIndex = scoreBoardData.findIndex(item => item.id === searchId);
+
+            if (studentIndex !== -1) {
+                const studentData = scoreBoardData[studentIndex];
+                const rank = studentIndex + 1; // ลำดับอันดับเริ่มที่ 1
+                const totalItems = studentData.points / 5; // แปลงแต้มกลับมาเป็นจำนวนชิ้นขยะ (ชิ้นละ 5 แต้ม)
+
+                // อัปเดตข้อมูลเข้าบอร์ดสถิติส่วนบุคคล
+                document.getElementById('stat-rank').innerText = "#" + rank;
+                document.getElementById('stat-points').innerText = studentData.points + " แต้ม";
+                document.getElementById('stat-items').innerText = totalItems + " ชิ้น";
+                
+                // คำนวณหลอด Progress Bar (ตัวอย่างเป้าหมายจิตอาสาขั้นต้นที่ 50 ชิ้นขยะ)
+                const progressPercent = Math.min((totalItems / 50) * 100, 100);
+                document.getElementById('stat-progress').style.width = progressPercent + "%";
+
+                // เปิดการแสดงผล แดชบอร์ดสถิติ
+                dashboard.style.display = "grid";
+                errorMsg.style.display = "none";
+            } else {
+                // กรณีไม่พบรหัสนักเรียนในระบบคลังแต้ม
+                dashboard.style.display = "none";
+                errorMsg.style.display = "block";
+                errorMsg.innerText = "❌ ไม่พบรหัสนักเรียน " + searchId + " ในระบบคะแนน (หรือยังไม่เคยสะสมแต้ม)";
+                errorMsg.style.color = "#dc2626";
+            }
+        }
+
+        // รันการโหลดตารางข้อมูลครั้งแรกเมื่อเปิดหน้าเว็บ
+        renderLeaderboard();
+    </script>
+</body>
+</html>
