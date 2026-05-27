@@ -20,7 +20,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color);
             color: #1f2937;
             margin: 0;
@@ -46,10 +46,9 @@
             gap: 12px;
         }
 
-        /* โลโก้พระเกี้ยวแบบ SVG แท้ ปลอดภัย ไม่ทำให้เว็บค้าง */
         .school-logo-vector {
-            width: 100px;
-            height: 100px;
+            width: 90px;
+            height: 90px;
             filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.2));
         }
 
@@ -89,7 +88,7 @@
         .btn:active { transform: scale(0.98); opacity: 0.9; }
         .btn-danger { background-color: #ef4444; }
 
-        /* ส่วนแสดงผลกล้อง */
+        /* พื้นที่แสดงผลกล้อง */
         .webcam-box {
             position: relative; width: 100%; max-width: 440px; aspect-ratio: 4/3;
             background-color: #111827; border-radius: 20px; margin: 0 auto 15px auto;
@@ -97,13 +96,11 @@
             border: 4px solid #e5e7eb;
         }
         
-        /* สไตล์สำหรับ Canvas ของ Teachable Machine */
         #webcam-container canvas {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover;
             border-radius: 16px;
-            transform: scaleX(1); /* กล้องหลังไม่ต้องสะท้อนเงา */
         }
 
         .webcam-placeholder { color: #9ca3af; font-size: 16px; position: absolute; z-index: 1; }
@@ -131,4 +128,58 @@
         .bin-container { display: inline-block; width: 90px; height: 110px; position: relative; border-radius: 10px 10px 14px 14px; margin: 10px auto; border: 4px solid rgba(255, 255, 255, 0.9); }
         .bin-lid { width: 102px; height: 14px; background: rgba(255, 255, 255, 0.9); position: absolute; top: -16px; left: -10px; border-radius: 6px; }
         .bin-handle { width: 34px; height: 8px; border: 3px solid rgba(255, 255, 255, 0.9); border-bottom: none; position: absolute; top: -24px; left: 25px; border-radius: 4px 4px 0 0; }
-        .bin-icon-text { color: white; font-weight:
+        .bin-icon-text { color: white; font-weight: bold; font-size: 14px; margin-top: 40px; }
+
+        .bg-recycle { background-color: var(--recycle-color); color: #1e293b !important; }
+        .bg-recycle .bin-container { background-color: var(--recycle-color); border-color: #1e293b; }
+        .bg-recycle .bin-lid, .bg-recycle .bin-handle { background: #1e293b; }
+        .bg-recycle .bin-handle { border-color: #1e293b; background: transparent; }
+        .bg-recycle .bin-icon-text { color: #1e293b; }
+        .bg-general { background-color: var(--general-color); }
+        .bg-general .bin-container { background-color: var(--general-color); }
+        .bg-organic { background-color: var(--organic-color); }
+        .bg-organic .bin-container { background-color: var(--organic-color); }
+        .bg-hazardous { background-color: var(--hazardous-color); }
+        .bg-hazardous .bin-container { background-color: var(--hazardous-color); }
+
+        .search-box-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-input { flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; }
+        
+        .stats-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; display: none; }
+        .stats-box { background-color: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; }
+        .stats-val { font-size: 28px; font-weight: 800; color: var(--bodin-blue); margin-top: 5px; }
+        .stats-lbl { font-size: 14px; color: #6b7280; font-weight: 600; }
+
+        .section-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .table-wrapper { overflow-x: auto; margin-top: 15px; border-radius: 12px; border: 1px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 16px; }
+        th, td { padding: 14px; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f8fafc; font-weight: 700; color: #4b5563; }
+        .rank-badge { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; font-weight: bold; }
+        .rank-1 { background-color: #fef3c7; color: #d97706; }
+        .rank-2 { background-color: #e2e2e2; color: #475569; }
+        .rank-3 { background-color: #ffedd5; color: #ea580c; }
+
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
+        .page-btn { background-color: white; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .page-btn.active { background-color: var(--bodin-blue); color: white; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box { background: white; width: 85%; max-width: 420px; padding: 28px; border-radius: 24px; text-align: center; }
+        .modal-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); }
+        .bodin-input { width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 18px; text-align: center; box-sizing: border-box; margin-bottom: 15px; font-weight: 600; }
+        .nickname-section { display: none; margin-top: 5px; }
+        .modal-buttons { display: flex; gap: 12px; justify-content: center; }
+
+        .admin-config-container { position: fixed; bottom: 20px; right: 20px; z-index: 90; display: flex; flex-direction: column; align-items: flex-end; }
+        .gear-toggle-btn { background-color: #6b7280; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; opacity: 0.5; }
+        .admin-panel-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); width: 320px; display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <svg class="school-logo-vector" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 15 L50 5 M50 85 L50 95 M15 50 L5 50 M95 50 L85 50" stroke="#f1c40f" stroke-width="3" stroke-linecap="round"/>
+            <path d="M30 70 C 30 70, 50 82,
