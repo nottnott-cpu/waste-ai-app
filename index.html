@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bodin Waste Classifier AI & Statistics</title>
+    <title>Bodin Waste Classifier AI (Kiosk Edition)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
     
@@ -73,17 +73,19 @@
             -webkit-appearance: none;
         }
         .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-danger { background-color: #ef4444; }
 
         /* ส่วนควบคุมกล้อง */
         .webcam-box {
             position: relative; width: 100%; max-width: 440px; aspect-ratio: 4/3;
             background-color: #111827; border-radius: 20px; margin: 0 auto 15px auto;
             overflow: hidden; display: flex; align-items: center; justify-content: center;
+            border: 4px solid #e5e7eb;
         }
         #webcam-container video { width: 100% !important; height: 100% !important; object-fit: cover; }
         .webcam-placeholder { color: #9ca3af; font-size: 16px; position: absolute; z-index: 1; }
 
-        .camera-control { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; }
+        .camera-control { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; margin-top: 10px; }
         .switch-label { font-size: 18px; font-weight: 600; color: #4b5563; }
         .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -92,7 +94,16 @@
         input:checked + .slider { background-color: #34d399; }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* การ์ดแจ้งเตือนผลลัพธ์ */
+        /* ปุ่มกดชัดเตอร์สแกนภาพสไตล์พรีเมียม */
+        .scan-trigger-btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white; border: none; padding: 16px 40px; border-radius: 16px;
+            font-size: 18px; font-weight: 700; cursor: pointer; width: 100%; max-width: 440px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); display: none; transition: all 0.2s;
+        }
+        .scan-trigger-btn:active { transform: scale(0.97); }
+
+        /* การ์ดแจ้งเตือนผลลัพธ์สีเตือน */
         .result-card { padding: 24px; border-radius: 20px; color: white; display: none; box-shadow: 0 8px 25px rgba(0,0,0,0.1); animation: zoomIn 0.3s ease; }
         @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .result-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
@@ -116,7 +127,7 @@
         .bg-hazardous { background-color: var(--hazardous-color); }
         .bg-hazardous .bin-container { background-color: var(--hazardous-color); }
 
-        /* 📊 ส่วนแสดงเมนูสถิติรายบุคคล (เพิ่มใหม่) */
+        /* ส่วนแสดงเมนูสถิติรายบุคคล */
         .search-box-container { display: flex; gap: 10px; margin-bottom: 15px; }
         .search-input { flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; }
         .search-input:focus { border-color: var(--bodin-blue); outline: none; }
@@ -180,17 +191,20 @@
             </div>
 
             <div class="camera-control">
-                <span class="switch-label">ระบบสแกนขยะอัตโนมัติ</span>
-                <label class="switch">
-                    <input type="checkbox" id="camera-toggle" onchange="handleCameraToggle(this)">
-                    <span class="slider"></span>
-                </label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="switch-label">เปิดระบบกล้องไอแพด</span>
+                    <label class="switch">
+                        <input type="checkbox" id="camera-toggle" onchange="handleCameraToggle(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button id="scan-trigger" class="scan-trigger-btn" onclick="captureAndPredict()">📸 วางขยะเรียบร้อย กดเพื่อสแกน</button>
             </div>
         </div>
 
         <div class="result-card" id="result-card">
-            <div class="result-title" id="res-title">ตรวจพบขยะประเภท</div>
-            <div class="result-details" id="res-details">คำแนะนำในการทิ้งถังขยะ</div>
+            <div class="result-title" id="res-title">กำลังวิเคราะห์ภาพภาพขยะ...</div>
+            <div class="result-details" id="res-details">โปรดรอสักครู่</div>
             
             <div class="bin-container">
                 <div class="bin-handle"></div>
@@ -213,8 +227,8 @@
                     <div class="stats-val" id="stat-rank">-</div>
                 </div>
                 <div class="stats-box">
-                    <div class="stats-lbl">✨ คะแนนรวมทั้งหมด</div>
-                    <div class="stats-val" id="stat-points">0 แต้มน</div>
+                    <div class="stats-lbl">✨ คะแนนสะสมรวม</div>
+                    <div class="stats-val" id="stat-points">0 แต้ม</div>
                 </div>
                 <div class="stats-box" style="grid-column: span 2;">
                     <div class="stats-lbl">📦 จำนวนชิ้นขยะที่ช่วยแยกแยะสำเร็จ</div>
@@ -243,14 +257,16 @@
                 </table>
             </div>
             <div class="pagination" id="pagination-container"></div>
+            
+            <button class="btn btn-danger" style="margin-top: 20px; font-size: 14px; padding: 10px 20px; border-radius: 10px;" onclick="clearAllData()">⚠️ ล้างข้อมูลตารางคะแนนทั้งหมด</button>
         </div>
 
     </div>
 
     <div class="modal-overlay" id="point-modal">
         <div class="modal-box">
-            <div class="modal-title">✨ ตรวจจับภาพขยะสำเร็จ!</div>
-            <div class="modal-text">ต้องการสะสมคะแนน <b>Bodin Point จิตอาสาทำความดี</b> หรือไม่คะ?</div>
+            <div class="modal-title">✨ ถ่ายภาพขยะเรียบร้อย!</div>
+            <div class="modal-text">ต้องการสะสมคะแนน <b>Bodin Point จิตอาสาทำความดี (+1 แต้ม)</b> หรือไม่คะ?</div>
             
             <div id="input-score-section" style="display: none;">
                 <input type="number" id="student-id" class="bodin-input" placeholder="กรอกรหัสนักเรียน 5 หลัก" pattern="[0-9]*" inputmode="numeric">
@@ -264,22 +280,21 @@
     </div>
 
     <script>
-        let model, webcam, maxPredictions;
+        let model, webcam;
         let isModelLoaded = false;
-        let isScanning = false;
-        let scanInterval;
+        let lastSpeechTimeout;
 
-        // ระบบจำลองฐานข้อมูลเก็บคะแนนใน LocalStorage ข้อมูลไม่หายแม้มือถือรีเฟรช
-        let scoreBoardData = JSON.parse(localStorage.getItem('bodin_points')) || [
-            { id: "54321", points: 85 }, { id: "12345", points: 72 }, { id: "67890", points: 64 },
-            { id: "11122", points: 50 }, { id: "33445", points: 45 }, { id: "99887", points: 30 },
-            { id: "55566", points: 25 }, { id: "77788", points: 15 }, { id: "22233", points: 10 }
+        // 🌟 ตั้งค่าเริ่มต้นฐานข้อมูลจำลอง (จัดเรียงจากมากไปหาน้อย)
+        const defaultScores = [
+            { id: "54321", points: 24 }, { id: "12345", points: 18 }, { id: "67890", points: 15 },
+            { id: "11122", points: 12 }, { id: "33445", points: 9 }, { id: "99887", points: 7 },
+            { id: "55566", points: 5 }, { id: "77788", points: 3 }, { id: "22233", points: 1 }
         ];
-
+        
+        let scoreBoardData = JSON.parse(localStorage.getItem('bodin_points')) || defaultScores;
         let currentPage = 1;
         const rowsPerPage = 5;
 
-        // ระบบออกเสียงสังเคราะห์ภาษาไทย
         function speakThai(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
@@ -309,8 +324,10 @@
 
         async function handleCameraToggle(toggle) {
             const camText = document.getElementById('cam-status-text');
+            const shutterBtn = document.getElementById('scan-trigger');
+            
             if (toggle.checked) {
-                camText.innerText = "🔄 กำลังเปิดระบบกล้อง...";
+                camText.innerText = "🔄 กำลังเปิดกล้องไอแพด...";
                 try {
                     webcam = new tmImage.Webcam(400, 300, true); 
                     await webcam.setup({ facingMode: "environment" }); 
@@ -318,56 +335,69 @@
                     document.getElementById('webcam-container').innerHTML = "";
                     document.getElementById('webcam-container').appendChild(webcam.canvas);
                     camText.style.display = "none";
-                    isScanning = true;
-                    startScanningLoop();
+                    shutterBtn.style.display = "block"; // เปิดปุ่มกดชัดเตอร์เมื่อกล้องพร้อม
+                    
+                    // เพิ่มลูปอัปเดตหน้าจอภาพให้เคลื่อนไหวสดชื่นลื่นไหลตลอดเวลา โดยยังไม่ส่งตรวจจับ
+                    window.requestAnimationFrame(loopWebcamUpdate);
                 } catch (err) {
                     alert("ไม่สามารถเปิดกล้องบน Safari ได้ค่ะ");
                     toggle.checked = false;
                     camText.innerText = "🎥 กล้องปิดอยู่";
+                    shutterBtn.style.display = "none";
                 }
             } else {
                 stopCamera();
             }
         }
 
+        function loopWebcamUpdate() {
+            if (webcam && webcam.canvas) {
+                webcam.update();
+                window.requestAnimationFrame(loopWebcamUpdate);
+            }
+        }
+
         function stopCamera() {
-            isScanning = false;
-            clearInterval(scanInterval);
             if (webcam) webcam.stop();
             document.getElementById('webcam-container').innerHTML = "";
             document.getElementById('cam-status-text').style.display = "block";
             document.getElementById('cam-status-text').innerText = "🎥 กล้องปิดอยู่";
+            document.getElementById('scan-trigger').style.display = "none";
             document.getElementById('result-card').style.display = "none";
         }
 
-        function startScanningLoop() {
-            scanInterval = setInterval(async () => {
-                if (!isScanning) return;
-                webcam.update();
-                if (isModelLoaded) {
-                    await predictLive();
-                } else {
-                    clearInterval(scanInterval);
-                    predictMockup();
-                }
-            }, 100);
-        }
-
-        async function predictLive() {
-            const prediction = await model.predict(webcam.canvas);
-            let highestIndex = 0;
-            let highestValue = 0;
-            for (let i = 0; i < prediction.length; i++) {
-                if (prediction[i].probability > highestValue) {
-                    highestValue = prediction[i].probability;
-                    highestIndex = i;
-                }
-            }
-            const confidence = Math.round(prediction[highestIndex].probability * 100);
+        // 📸 🛠️ ปรับเปลี่ยนใหม่: ตรวจจับเฉพาะเมื่อมีการกดปุ่มเท่านั้น แก้ปัญหาลั่นเองถาวร
+        async function captureAndPredict() {
+            if (!webcam) return;
             
-            if (confidence > 85) {
-                isScanning = false;
+            const card = document.getElementById('result-card');
+            card.className = "result-card";
+            card.style.backgroundColor = "#4b5563";
+            document.getElementById('res-title').innerText = "🔮 AI กำลังประมวลผลวิเคราะห์วิจัยภาพ...";
+            document.getElementById('res-details').innerText = "โปรดถือขยะนิ่งๆ สักครู่ค่ะ";
+            card.style.display = 'block';
+
+            if (isModelLoaded) {
+                const prediction = await model.predict(webcam.canvas);
+                let highestIndex = 0;
+                let highestValue = 0;
+                for (let i = 0; i < prediction.length; i++) {
+                    if (prediction[i].probability > highestValue) {
+                        highestValue = prediction[i].probability;
+                        highestIndex = i;
+                    }
+                }
+                const confidence = Math.round(prediction[highestIndex].probability * 100);
                 const className = prediction[highestIndex].className.toLowerCase();
+                
+                // 💡 เคล็ดลับดักบั๊ก: ถ้าคลาสที่เจอสูงสุดเป็นฉากหลังว่างๆ (Background) ให้แจ้งเตือนนักเรียนว่ายังไม่ได้วางขยะ
+                if (className.includes('background') || className.includes('empty') || className.includes('ว่าง')) {
+                    document.getElementById('res-title').innerText = "⚠️ ไม่พบวัตถุขยะในภาพค่ะ";
+                    document.getElementById('res-details').innerText = "กรุณานำเศษขยะมาวางที่หน้ากล้องแล้วกดสแกนใหม่อีกครั้งนะค่ะ";
+                    speakThai("ไม่พบวัตถุขยะค่ะ กรุณาวางขยะแล้วกดสแกนใหม่อีกครั้งค่ะ");
+                    return;
+                }
+
                 let trashType = 'general';
                 if (className.includes('recycle') || className.includes('รีไซเคิล') || className.includes('เหลือง')) trashType = 'recycle';
                 else if (className.includes('general') || className.includes('ทั่วไป') || className.includes('น้ำเงิน')) trashType = 'general';
@@ -375,14 +405,14 @@
                 else if (className.includes('hazard') || className.includes('อันตราย') || className.includes('แดง')) trashType = 'hazardous';
 
                 processTrashResult(trashType, confidence);
+            } else {
+                // โหมดจำลองกรณียังไม่ได้ต่อลิงก์ AI จริง
+                const types = ['recycle', 'general', 'organic', 'hazardous'];
+                processTrashResult(types[Math.floor(Math.random() * types.length)], 98);
             }
         }
 
-        function predictMockup() {
-            const types = ['recycle', 'general', 'organic', 'hazardous'];
-            processTrashResult(types[Math.floor(Math.random() * types.length)], 95);
-        }
-
+        // ระบบเปลี่ยนหน้าการ์ดสีถังขยะและหน่วงเวลา 2 วินาทีออกเสียง
         function processTrashResult(type, confidence) {
             const card = document.getElementById('result-card');
             const title = document.getElementById('res-title');
@@ -413,8 +443,9 @@
             document.getElementById('res-confidence').innerText = confidence;
             card.style.display = 'block';
 
-            // หน่วงเวลา 2 วินาทีก่อนส่งเสียงแจ้งเตือน
-            setTimeout(() => {
+            clearTimeout(lastSpeechTimeout);
+            // หน่วงดีเลย์ 2 วินาทีก่อนเปล่งเสียงพูดออกมาทางลำโพง
+            lastSpeechTimeout = setTimeout(() => {
                 speakThai(speechMessage);
                 setTimeout(() => { openModal(); }, 1500);
             }, 2000); 
@@ -443,43 +474,43 @@
                 if (!studentId) { alert("กรุณากรอกรหัสนักเรียนก่อนค่ะ"); return; }
                 
                 let studentIndex = scoreBoardData.findIndex(item => item.id === studentId);
+                // 🎯 ปรับกติกาใหม่: นับคะแนนเพิ่มขึ้นรอบละ 1 แต้ม (จากเดิม +5 แต้ม)
                 if (studentIndex !== -1) {
-                    scoreBoardData[studentIndex].points += 5;
+                    scoreBoardData[studentIndex].points += 1;
                 } else {
-                    scoreBoardData.push({ id: studentId, points: 5 });
+                    scoreBoardData.push({ id: studentId, points: 1 });
                 }
                 
                 localStorage.setItem('bodin_points', JSON.stringify(scoreBoardData));
                 renderLeaderboard();
                 
-                // อัปเดตรีเฟรชผลหน้าแดชบอร์ดค้นหาด้วย ถ้าเปิดค้างไว้อยู่
                 if (document.getElementById('search-student-id').value.trim() === studentId) {
                     searchStudentStats();
                 }
                 
-                alert("🎉 สะสมคะแนน Bodin Point รหัส " + studentId + " เรียบร้อยแล้วค่ะ (+5 คะแนน)");
+                alert("🎉 บันทึกแต้ม Bodin Point รหัส " + studentId + " สำเร็จแล้วค่ะ (+1 แต้ม)");
             }
             
             document.getElementById('point-modal').classList.remove('active');
             document.getElementById('result-card').style.display = "none";
-            
-            if (document.getElementById('camera-toggle').checked) {
-                isScanning = true;
-                startScanningLoop();
-            }
         }
 
-        // 🏆 ระบบคำนวณและแสดงผลตารางคะแนน (จัดเรียงจากมากไปน้อย + แบ่งหน้า)
+        // 🏆 ระบบจัดการและเรียงตารางคะแนนจากมากไปน้อย
         function renderLeaderboard() {
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = "";
 
-            // จัดการเรียงคะแนนจากมากไปน้อย
+            // จัดการเรียงลำดับจากคะแนนมากสุดลงไปหาน้อยสุดอย่างเข้มงวด
             scoreBoardData.sort((a, b) => b.points - a.points);
 
             const startIndex = (currentPage - 1) * rowsPerPage;
             const endIndex = startIndex + rowsPerPage;
             const paginatedItems = scoreBoardData.slice(startIndex, endIndex);
+
+            if (paginatedItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#9ca3af; padding: 20px;">ไม่มีข้อมูลคะแนนในระบบ กดสแกนขยะเพื่อเริ่มสะสมแต้มคนแรก!</td></tr>`;
+                return;
+            }
 
             paginatedItems.forEach((item, index) => {
                 const globalRank = startIndex + index + 1;
@@ -492,7 +523,7 @@
                 const row = `<tr>
                     <td style="text-align: center;">${rankDisplay}</td>
                     <td style="font-weight: 600;">รหัสนักเรียน ${item.id}</td>
-                    <td style="text-align: right; font-weight: 700; color: var(--bodin-blue);">${item.points.toLocaleString()}</td>
+                    <td style="text-align: right; font-weight: 700; color: var(--bodin-blue);">${item.points.toLocaleString()} แต้ม</td>
                 </tr>`;
                 tbody.innerHTML += row;
             });
@@ -525,50 +556,57 @@
             container.appendChild(nextBtn);
         }
 
-        // 📊 ฟังก์ชันตรวจสอบสถิติคะแนนของนักเรียนแต่ละคน (ฟีเจอร์เพิ่มใหม่)
+        // 📊 ค้นหาสถิติตัวเลขรายบุคคล
         function searchStudentStats() {
             const searchId = document.getElementById('search-student-id').value.trim();
             const dashboard = document.getElementById('personal-dashboard');
             const errorMsg = document.getElementById('search-error-msg');
             
-            if (!searchId) {
-                alert("กรุณาระบุรหัสนักเรียนที่ต้องการค้นหาก่อนค่ะ");
-                return;
-            }
+            if (!searchId) { alert("กรุณาระบุรหัสนักเรียนก่อนค่ะ"); return; }
 
-            // จัดเรียงลำดับคะแนนรวมทุกครั้งเพื่อหาตำแหน่งอันดับ (Rank) ที่ถูกต้อง
             scoreBoardData.sort((a, b) => b.points - a.points);
-            
-            // ค้นหาตำแหน่งอาสาสมัครในอาร์เรย์ข้อมูล
             const studentIndex = scoreBoardData.findIndex(item => item.id === searchId);
 
             if (studentIndex !== -1) {
                 const studentData = scoreBoardData[studentIndex];
-                const rank = studentIndex + 1; // ลำดับอันดับเริ่มที่ 1
-                const totalItems = studentData.points / 5; // แปลงแต้มกลับมาเป็นจำนวนชิ้นขยะ (ชิ้นละ 5 แต้ม)
+                const rank = studentIndex + 1;
 
-                // อัปเดตข้อมูลเข้าบอร์ดสถิติส่วนบุคคล
                 document.getElementById('stat-rank').innerText = "#" + rank;
                 document.getElementById('stat-points').innerText = studentData.points + " แต้ม";
-                document.getElementById('stat-items').innerText = totalItems + " ชิ้น";
+                document.getElementById('stat-items').innerText = studentData.points + " ชิ้น"; // 1 แต้ม = 1 ชิ้น
                 
-                // คำนวณหลอด Progress Bar (ตัวอย่างเป้าหมายจิตอาสาขั้นต้นที่ 50 ชิ้นขยะ)
-                const progressPercent = Math.min((totalItems / 50) * 100, 100);
+                const progressPercent = Math.min((studentData.points / 20) * 100, 100); // ตั้งเป้าหมายที่ 20 ชิ้นขยะ
                 document.getElementById('stat-progress').style.width = progressPercent + "%";
 
-                // เปิดการแสดงผล แดชบอร์ดสถิติ
                 dashboard.style.display = "grid";
                 errorMsg.style.display = "none";
             } else {
-                // กรณีไม่พบรหัสนักเรียนในระบบคลังแต้ม
                 dashboard.style.display = "none";
                 errorMsg.style.display = "block";
-                errorMsg.innerText = "❌ ไม่พบรหัสนักเรียน " + searchId + " ในระบบคะแนน (หรือยังไม่เคยสะสมแต้ม)";
+                errorMsg.innerText = "❌ ไม่พบรหัสนักเรียน " + searchId + " ในฐานข้อมูลแต้มสะสม";
                 errorMsg.style.color = "#dc2626";
             }
         }
 
-        // รันการโหลดตารางข้อมูลครั้งแรกเมื่อเปิดหน้าเว็บ
+        // 🌟 🛠️ ฟังก์ชันเพิ่มใหม่: เคลียร์ล้างข้อมูลลบแต้มทั้งหมดในระบบให้เกลี้ยง
+        function clearAllData() {
+            if (confirm("⚠️ คุณแน่ใจใช่ไหมคะว่าต้องการลบข้อมูลสถิติและคะแนนของนักเรียนทุกคนออกจากเครื่องนี้? ข้อมูลจะหายไปถาวรทันที")) {
+                scoreBoardData = []; // สั่งเคลียร์ให้เป็นอาร์เรย์ว่างเปล่า
+                localStorage.removeItem('bodin_points'); // ลบหน่วยความจำเครื่อง
+                currentPage = 1;
+                
+                // ปิดแดชบอร์ดค้นหารายบุคคล
+                document.getElementById('personal-dashboard').style.display = "none";
+                document.getElementById('search-student-id').value = "";
+                document.getElementById('search-error-msg').style.display = "block";
+                document.getElementById('search-error-msg').innerText = "ระบุรหัสนักเรียนและกดค้นหาเพื่อดูข้อมูลเชิงลึก";
+                document.getElementById('search-error-msg').style.color = "#9ca3af";
+                
+                renderLeaderboard(); // รีเฟรชหน้าตาราง
+                alert("🧹 ระบบทำการล้างฐานข้อมูลคะแนน (Clear Data) เรียบร้อยหมดจดแล้วค่ะ!");
+            }
+        }
+
         renderLeaderboard();
     </script>
 </body>
