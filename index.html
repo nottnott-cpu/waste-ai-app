@@ -37,23 +37,26 @@
             color: white;
             width: 100%;
             text-align: center;
-            padding: 24px 0;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            padding: 26px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 14px;
         }
 
-        .school-logo-vector {
-            width: 90px;
+        /* ส่วนปรับแต่งโลโก้โรงเรียนบดินทรเดชาใหม่ */
+        .school-logo-img {
             height: 90px;
-            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.2));
+            width: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            object-fit: contain;
         }
 
-        header h1 { margin: 0; font-size: 26px; font-weight: 700; }
-        header p { margin: 4px 0 0 0; font-size: 15px; opacity: 0.85; }
+        header h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; }
+        header p { margin: 6px 0 0 0; font-size: 15px; opacity: 0.85; }
 
         .container {
             max-width: 768px;
@@ -179,16 +182,7 @@
 <body>
 
     <header>
-        <svg class="school-logo-vector" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <path d="M50 15 L50 5 M50 85 L50 95 M15 50 L5 50 M95 50 L85 50" stroke="#f1c40f" stroke-width="3" stroke-linecap="round"/>
-            <path d="M30 70 C 30 70, 50 82, 70 70 C 70 70, 75 58, 50 60 C 25 58, 30 70, 30 70 Z" fill="#e6c229" stroke="#f1c40f" stroke-width="2"/>
-            <path d="M35 70 L38 82 C38 82, 50 87, 62 82 L65 70" fill="none" stroke="#f1c40f" stroke-width="2"/>
-            <path d="M32 58 C 32 58, 28 30, 50 15 C 72 30, 68 58, 50 60 Z" fill="#d4af37" stroke="#f1c40f" stroke-width="2"/>
-            <ellipse cx="50" cy="42" rx="12" ry="5" fill="none" stroke="#ffffff" stroke-width="2"/>
-            <ellipse cx="50" cy="30" rx="7" ry="3" fill="none" stroke="#ffffff" stroke-width="1.5"/>
-            <line x1="50" y1="20" x2="50" y2="10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-            <circle cx="50" cy="24" r="2" fill="#f1c40f"/>
-        </svg>
+        <img class="school-logo-img" src="image_f88f1f.png" alt="โลโก้โรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)">
         <div>
             <h1>♻️ Bodin Point - AI แยกขยะจิตอาสา</h1>
             <p>นวัตกรรมแยกขยะอัจฉริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)</p>
@@ -325,7 +319,7 @@
         var isModelLoaded = false;
         var lastSpeechTimeout = null;
         var isCamPlaying = false;
-        var useMockCamera = false; // จะถูกเปลี่ยนเป็น true ทันทีถ้าเรียกไลบรารี Google ไม่ได้
+        var useMockCamera = false; 
 
         var defaultScores = [
             { id: "54321", name: "พี่บดินทร", points: 24 }, 
@@ -377,7 +371,6 @@
             }
         }
 
-        // ฟังก์ชันเปิดกล้องแบบยืดหยุ่นสูง (ถ้าเทนเซอร์โฟลว์ล่ม จะดึงกล้องสด iOS ดั้งเดิมขึ้นมาส่องแทนทันที หน้าเว็บไม่มีค้าง)
         async function handleCameraToggle(toggle) {
             var camText = document.getElementById('cam-status-text');
             var shutterBtn = document.getElementById('scan-trigger');
@@ -386,7 +379,6 @@
             if (toggle.checked) {
                 camText.innerText = "🔄 กำลังเปิดกล้องไอแพด...";
                 
-                // ตรวจสอบว่าไลบรารีของ Google พร้อมทำงานไหม ถ้าไม่พร้อมให้เข้าสู่โหมดกล้องสำรองดั้งเดิม
                 if (typeof tmImage === 'undefined' || useMockCamera) {
                     useMockCamera = true;
                     try {
@@ -419,7 +411,6 @@
                     
                     window.requestAnimationFrame(loopWebcamUpdate);
                 } catch (err) {
-                    // หากรุ่นของ iPad มีปัญหาโครงสร้างคลาสกล้องของกูเกิล ให้สลับมาใช้ระบบกล้องแท้ดั้งเดิมทันที
                     useMockCamera = true;
                     handleCameraToggle(toggle); 
                 }
@@ -493,7 +484,6 @@
 
                 processTrashResult(trashType, confidence);
             } else {
-                // หากอยู่ในโหมดสำรอง/เน็ตหลุด จะสลับมาสุ่มแอนิเมชันเสมือนจริงให้ผลลัพธ์ลื่นไหลทันที
                 var types = ['recycle', 'general', 'organic', 'hazardous'];
                 var randomType = types[Math.floor(Math.random() * types.length)];
                 var randomConfidence = Math.floor(Math.random() * (99 - 88 + 1)) + 88;
