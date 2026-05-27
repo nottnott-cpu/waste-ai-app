@@ -38,10 +38,23 @@
             text-align: center;
             padding: 24px 0;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        /* ตกแต่งรูปโลโก้โรงเรียน */
+        .school-logo {
+            height: 90px; /* ขนาดกำลังพอดีสำหรับส่วนหัว */
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.2));
         }
 
         header h1 { margin: 0; font-size: 26px; font-weight: 700; }
-        header p { margin: 6px 0 0 0; font-size: 15px; opacity: 0.85; }
+        header p { margin: 4px 0 0 0; font-size: 15px; opacity: 0.85; }
 
         .container {
             max-width: 768px; /* ขนาดกว้างพอดีสำหรับ iPad */
@@ -138,4 +151,95 @@
         .search-input { flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; }
         .search-input:focus { border-color: var(--bodin-blue); outline: none; }
         
-        .stats-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap:
+        .stats-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; display: none; }
+        .stats-box { background-color: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; }
+        .stats-val { font-size: 28px; font-weight: 800; color: var(--bodin-blue); margin-top: 5px; }
+        .stats-lbl { font-size: 14px; color: #6b7280; font-weight: 600; }
+
+        /* ตารางผู้นำคะแนน */
+        .section-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .table-wrapper { overflow-x: auto; margin-top: 15px; border-radius: 12px; border: 1px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 16px; }
+        th, td { padding: 14px; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f8fafc; font-weight: 700; color: #4b5563; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) { background-color: #f9fafb; }
+        .rank-badge { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; font-weight: bold; }
+        .rank-1 { background-color: #fef3c7; color: #d97706; }
+        .rank-2 { background-color: #e2e8f0; color: #475569; }
+        .rank-3 { background-color: #ffedd5; color: #ea580c; }
+
+        /* ระบบแบ่งหน้า */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
+        .page-btn { background-color: white; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; color: #4b5563; }
+        .page-btn.active { background-color: var(--bodin-blue); color: white; border-color: var(--bodin-blue); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Popup Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box { background: white; width: 85%; max-width: 420px; padding: 28px; border-radius: 24px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.15); transform: translateY(20px); transition: all 0.3s ease; }
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+        .modal-title { font-size: 22px; font-weight: 700; color: var(--bodin-blue); margin-bottom: 10px; }
+        .modal-text { font-size: 16px; color: #4b5563; margin-bottom: 20px; }
+        .bodin-input { width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 18px; text-align: center; box-sizing: border-box; margin-bottom: 15px; font-weight: 600; }
+        .student-id-input { letter-spacing: 2px; }
+        .nickname-section { display: none; animation: fadeIn 0.3s ease; margin-top: 5px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-buttons { display: flex; gap: 12px; justify-content: center; }
+        .btn-secondary { background-color: #f3f4f6; color: #4b5563; }
+
+        /* ส่วนตั้งค่าลับมุมขวาล่าง */
+        .admin-config-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 90;
+            display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+        }
+        .gear-toggle-btn {
+            background-color: #6b7280; color: white; border: none;
+            width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+            font-size: 20px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0.6; transition: all 0.2s;
+        }
+        .gear-toggle-btn:hover, .gear-toggle-btn:active { opacity: 1; transform: scale(1.05); }
+        
+        .admin-panel-card {
+            background: white; padding: 20px; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e5e7eb;
+            width: 320px; text-align: center; display: none; animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="https://www.bodin.ac.th/home/wp-content/uploads/2021/04/logo-bodin.png" alt="โลโก้โรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)" class="school-logo" onerror="this.src='https://www.bodin.ac.th/home/wp-content/uploads/2020/07/cropped-logo-bodin-1.png'">
+        <div>
+            <h1>♻️ Bodin Point - AI แยกขยะจิตอาสา</h1>
+            <p>นวัตกรรมแยกขยะอัจฉริยะเพื่อโรงเรียนบดินทรเดชา (สิงห์ สิงหเสนี)</p>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div class="card">
+            <div class="webcam-box">
+                <div class="webcam-placeholder" id="cam-status-text">🎥 กล้องปิดอยู่</div>
+                <div id="webcam-container"></div>
+            </div>
+
+            <div class="camera-control">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="switch-label">เปิดระบบกล้องไอแพด</span>
+                    <label class="switch">
+                        <input type="checkbox" id="camera-toggle" onchange="handleCameraToggle(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button id="scan-trigger" class="scan-trigger-btn" onclick="captureAndPredict()">📸 วางขยะเรียบร้อย กดเพื่อสแกน</button>
+            </div>
+        </div>
+
+        <div class="result-card" id="result-card">
+            <div class="result-title" id="res-title">กำลังวิเคราะห์ภาพภาพขยะ...</div>
+            <div class="result-details" id="
